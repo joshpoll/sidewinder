@@ -30,6 +30,8 @@ https://arxiv.org/pdf/1903.00982.pdf. Really, places are meant to refer to patte
 but we think "variable" might be more confusing. The naming and utility of places or other ways of
 identifying structures in the Config AST will probably become clear as we flesh out V2.
 
+Places might also enable delta-based state descriptions, but I'm not sure.
+
 # ReasonReact Template & Examples
 
 This is:
