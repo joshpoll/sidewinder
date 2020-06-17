@@ -10,21 +10,10 @@ type node = {
 };
 
 let rec computeGlobalTransformAux =
-        (
-          globalTransform,
-          RenderLinks.{uid, nodes, links, transform, bbox, render},
-        ) => {
+        (globalTransform, RenderLinks.{uid, nodes, links, transform, bbox, render}) => {
   let globalTransform = globalTransform->Transform.compose(transform);
   let nodes = List.map(computeGlobalTransformAux(globalTransform), nodes);
-  {
-    uid,
-    nodes,
-    links,
-    transform,
-    globalTransform,
-    bbox,
-    render,
-  };
+  {uid, nodes, links, transform, globalTransform, bbox, render};
 };
 
 let computeGlobalTransform = computeGlobalTransformAux(Transform.init);
@@ -85,7 +74,6 @@ let rec findNodeByUID = (uid, {uid: candidate, nodes} as n) =>
       nodes,
     );
   };
-
 
 let findNodeByUIDExn = (uid, n) =>
   switch (findNodeByUID(uid, n)) {

@@ -141,11 +141,7 @@ let rec computeLinksMapAux =
 let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks =
-        (
-          localLinks,
-          KernelIR.{uid, nodes, links, layout, computeBBox, render},
-        ) => {
+let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBBox, render}) => {
   let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
@@ -165,17 +161,7 @@ let fromKernel = n => {
 };
 
 let rec toKernel =
-        (
-          {
-            uid,
-            nodes,
-            renderingLinks,
-            layoutLinks: _,
-            layout,
-            computeBBox,
-            render,
-          },
-        )
+        ({uid, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, render})
         : KernelIR.node => {
   uid,
   nodes: List.map(toKernel, nodes),

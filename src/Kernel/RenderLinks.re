@@ -52,8 +52,7 @@ let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.
     lr(~source, ~target);
   };
 
-let rec renderLinks =
-        (Layout.{uid, nodes, links, transform, bbox, render} as n): node => {
+let rec renderLinks = (Layout.{uid, nodes, links, transform, bbox, render} as n): node => {
   let nodes = List.map(renderLinks, nodes);
   let links = List.map(renderLink(n), links);
   {uid, nodes, links, transform, bbox, render};
