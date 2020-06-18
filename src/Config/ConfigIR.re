@@ -11,6 +11,6 @@ type node = {
   place: option(Place.t), /* TODO: should every node have a place? should this just be a uid? */
   /* essentially an ADT constructor ID e.g. bind, ctxt. NOT unique. */
   name: string,
-  nodes: list(option(node)),
-  render: list(option(KernelIR.node)) => KernelIR.node,
+  nodes: option(list(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
+  render: option(list(KernelIR.node)) => KernelIR.node,
 };
