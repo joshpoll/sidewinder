@@ -13,14 +13,14 @@ let mk = (~uid=?, ~dx=0., ~dy=0., node, links) => {
         fillOpacity="0"
         stroke="#000"
       />
-      {KernelIR.defaultRender(nodes, links)}
+      {Kernel.defaultRender(nodes, links)}
     </>;
   };
   KernelIR.mk(
     ~uid?,
     ~nodes=[node],
     ~links,
-    ~layout=KernelIR.defaultLayout,
+    ~layout=Kernel.defaultLayout,
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->union_list->inflate(dx, dy),
     ~render,
   );
