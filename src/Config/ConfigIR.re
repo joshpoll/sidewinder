@@ -14,3 +14,5 @@ type node = {
   nodes: option(list(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
   render: option(list(KernelIR.node)) => KernelIR.node,
 };
+
+let mk = (~place=?, ~name, ~nodes, ~render) => {place, name, nodes, render};
