@@ -2,6 +2,7 @@ let atom = Atom.mk;
 let box = Box.mk;
 let graph = Graph.mk;
 let highlight = Highlight.mk;
+let hole = Hole.mk;
 let hSeq = HSeq.mk;
 let nest = Nest.mk;
 let noOp = NoOp.mk;
