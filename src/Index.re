@@ -78,13 +78,15 @@ ReactDOMRe.render(
   makeContainer("Theia Box"),
 );
 
+ReactDOMRe.render(<svg> {Kernel.render(Theia.str("foo"))} </svg>, makeContainer("Theia Str"));
+
 ReactDOMRe.render(
   <svg>
-    {Kernel.render(
-       {
-         Theia.str("foo");
-       },
-     )}
+    <g transform="translate(50, 50)">
+      {Kernel.render(
+         Theia.hSeq([Theia.vSeq([Theia.str("foo"), Theia.str("foo")]), Theia.str("bar")]),
+       )}
+    </g>
   </svg>,
-  makeContainer("Theia Str"),
+  makeContainer("Nested Sequences"),
 );
