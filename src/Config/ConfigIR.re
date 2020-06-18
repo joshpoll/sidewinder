@@ -15,4 +15,4 @@ type node = {
   render: option(list(KernelIR.node)) => KernelIR.node,
 };
 
-let mk = (~place=?, ~name, ~nodes, ~render) => {place, name, nodes, render};
+let mk = (~place=?, ~name, ~nodes, ~render, ()) => {place, name, nodes, render};
