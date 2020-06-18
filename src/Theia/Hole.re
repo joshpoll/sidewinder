@@ -1,4 +1,4 @@
-let mk = () =>
+let mk =
   Atom.mk(
     ~links=[],
     <rect fill="none" width="10" height="10" x="5" y="5" />,
