@@ -46,14 +46,16 @@ let computeSVGTransform =
 
 let svgTransform = (uid, transform, bbox, r) => {
   let transform = computeSVGTransform(transform, bbox);
-  <g id=uid transform> r </g>;
+  <g id={uid ++ "__node"} transform> r </g>;
 };
 
 let rec renderAux = (globalTransform, RenderLinks.{uid, nodes, links, transform, bbox, render}) => {
   let transform = Transform.compose(globalTransform, transform);
-  <g>
+  <g id=uid>
     {render(bbox, links) |> svgTransform(uid, transform, bbox)}
-    {List.map(renderAux(transform), nodes) |> Array.of_list |> React.array}
+    <g id={uid ++ "__children"}>
+      {List.map(renderAux(transform), nodes) |> Array.of_list |> React.array}
+    </g>
   </g>;
 };
 
