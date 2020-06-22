@@ -211,5 +211,5 @@ let mk = (~uid=?, ~nodes, ~linkRender, ~gap, ~direction) =>
       },
     // Js.log2("seq ns sizes", ns |> Array.of_list);
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=(nodes, _, links) => Kernel.defaultRender(nodes, links),
+    ~render=(_, links) => {Kernel.defaultLinks(links)},
   );

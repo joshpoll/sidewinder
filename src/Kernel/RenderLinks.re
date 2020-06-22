@@ -1,10 +1,11 @@
+/* TODO: probably needs to come after rendering nodes b/c now using a global frame so we don't know where they are? */
 type node = {
   uid: UID.t,
   nodes: list(node),
   links: list(React.element),
   transform: Node.transform,
   bbox: Node.bbox,
-  render: (list(React.element), Node.bbox, list(React.element)) => React.element,
+  render: (Node.bbox, list(React.element)) => React.element,
 };
 module MS = Belt.Map.String;
 

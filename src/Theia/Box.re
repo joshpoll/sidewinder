@@ -3,7 +3,7 @@ module MS = Belt.Map.String;
 /* TODO: transform must include scaling! */
 let mk = (~uid=?, ~dx=0., ~dy=0., node, links) => {
   open Rectangle;
-  let render = (nodes, bbox, links) => {
+  let render = (bbox, links) => {
     <>
       <rect
         x={Js.Float.toString(bbox->Rectangle.x1)}
@@ -13,7 +13,7 @@ let mk = (~uid=?, ~dx=0., ~dy=0., node, links) => {
         fillOpacity="0"
         stroke="#000"
       />
-      {Kernel.defaultRender(nodes, links)}
+      {Kernel.defaultLinks(links)}
     </>;
   };
   KernelIR.mk(

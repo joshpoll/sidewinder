@@ -6,7 +6,7 @@ type node = {
   /* transform relative to global frame. used for animation */
   globalTransform: Node.transform,
   bbox: Node.bbox,
-  render: (list(React.element), Node.bbox, list(React.element)) => React.element,
+  render: (Node.bbox, list(React.element)) => React.element,
 };
 
 let rec computeGlobalTransformAux =
@@ -44,15 +44,20 @@ let computeSVGTransform =
   scale ++ " " ++ translate;
 };
 
-let svgTransform = (transform, bbox, r) => {
+let svgTransform = (uid, transform, bbox, r) => {
   let transform = computeSVGTransform(transform, bbox);
-  <g transform> r </g>;
+  <g id=uid transform> r </g>;
 };
 
-let rec render = (RenderLinks.{nodes, links, transform, bbox, render: nodeRender}) => {
-  let nodes = List.map(render, nodes);
-  nodeRender(nodes, bbox, links) |> svgTransform(transform, bbox);
+let rec renderAux = (globalTransform, RenderLinks.{uid, nodes, links, transform, bbox, render}) => {
+  let transform = Transform.compose(globalTransform, transform);
+  <g>
+    {render(bbox, links) |> svgTransform(uid, transform, bbox)}
+    {List.map(renderAux(transform), nodes) |> Array.of_list |> React.array}
+  </g>;
 };
+
+let render = renderAux(Transform.init);
 
 /* TODO: use react-spring */
 let svgTransformTransition = (transform, bbox, nextTransform, nextBBox, r) => {

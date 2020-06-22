@@ -22,7 +22,7 @@ type node = {
   layoutLinks: list(Link.layout),
   layout: (list((UID.t, Node.bbox)), list(Link.layout)) => MS.t(Node.transform),
   computeBBox: MS.t(Node.bbox) => Node.bbox,
-  render: (list(React.element), Node.bbox, list(React.element)) => React.element,
+  render: (Node.bbox, list(React.element)) => React.element,
 };
 
 let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {

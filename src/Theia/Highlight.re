@@ -1,7 +1,7 @@
 module MS = Belt.Map.String;
 
 let mk = (~uid=?, ~fill, node, links) => {
-  let render = (nodes, bbox, links) => {
+  let render = (bbox, links) => {
     <>
       <rect
         x={Js.Float.toString(bbox->Rectangle.x1)}
@@ -10,7 +10,7 @@ let mk = (~uid=?, ~fill, node, links) => {
         height={Js.Float.toString(bbox->Rectangle.height)}
         fill
       />
-      {Kernel.defaultRender(nodes, links)}
+      {Kernel.defaultLinks(links)}
     </>;
   };
   KernelIR.mk(

@@ -96,5 +96,5 @@ let mk = (~uid=?, ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=(nodes, _, links) => Kernel.defaultRender(nodes, links),
+    ~render=(_, links) => {Kernel.defaultLinks(links)},
   );
