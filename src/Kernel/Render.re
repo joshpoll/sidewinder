@@ -1,24 +1,14 @@
-type node = {
-  uid: UID.t,
-  nodes: list(node),
-  links: list(React.element),
-  transform: Node.transform,
-  /* transform relative to global frame. used for animation */
-  globalTransform: Node.transform,
-  bbox: Node.bbox,
-  render: (Node.bbox, list(React.element)) => React.element,
-};
-
-let rec computeGlobalTransformAux =
-        (globalTransform, RenderLinks.{uid, nodes, links, transform, bbox, render}) => {
-  let globalTransform = globalTransform->Transform.compose(transform);
-  let nodes = List.map(computeGlobalTransformAux(globalTransform), nodes);
-  {uid, nodes, links, transform, globalTransform, bbox, render};
-};
-
-let computeGlobalTransform = computeGlobalTransformAux(Transform.init);
-
-/* TODO: factor out this computation so it can be shared by Render and TransitionNode */
+/* type node = {
+     uid: UID.t,
+     nodes: list(node),
+     links: list(React.element),
+     transform: Node.transform,
+     /* transform relative to global frame. used for animation */
+     globalTransform: Node.transform,
+     bbox: Node.bbox,
+     renderNode: (Node.bbox, list(React.element)) => React.element,
+     render: (UID.t, list(React.element), path, list(path), Node.bbox, Node.transform, React.element) => React.element
+   }; */
 
 let computeSVGTransform =
     ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
@@ -44,52 +34,10 @@ let computeSVGTransform =
   scale ++ " " ++ translate;
 };
 
-let svgTransform = (uid, transform, bbox, r) => {
+let render = (uid, nodes, ownPath, paths, bbox, transform, r) => {
   let transform = computeSVGTransform(transform, bbox);
-  <g id={uid ++ "__node"} transform> r </g>;
-};
-
-let rec renderAux = (globalTransform, RenderLinks.{uid, nodes, links, transform, bbox, render}) => {
-  let transform = Transform.compose(globalTransform, transform);
   <g id=uid>
-    {render(bbox, links) |> svgTransform(uid, transform, bbox)}
-    <g id={uid ++ "__children"}>
-      {List.map(renderAux(transform), nodes) |> Array.of_list |> React.array}
-    </g>
+    <g id={uid ++ "__node"} transform> r </g>
+    <g id={uid ++ "__children"}> {nodes |> Array.of_list |> React.array} </g>
   </g>;
 };
-
-let render = renderAux(Transform.init);
-
-/* TODO: use react-spring */
-let svgTransformTransition = (transform, bbox, nextTransform, nextBBox, r) => {
-  let transform = computeSVGTransform(transform, bbox);
-  <g transform> r </g>;
-};
-
-let rec findNodeByUID = (uid, {uid: candidate, nodes} as n) =>
-  if (uid == candidate) {
-    Some(n);
-  } else {
-    List.fold_left(
-      (on, n) =>
-        switch (on) {
-        | None => findNodeByUID(uid, n)
-        | Some(n) => Some(n)
-        },
-      None,
-      nodes,
-    );
-  };
-
-let findNodeByUIDExn = (uid, n) =>
-  switch (findNodeByUID(uid, n)) {
-  | None => failwith("couldn't find flow uid: " ++ uid)
-  | Some(n) => n
-  };
-
-let rec findNodeByPathExn = (path, {nodes} as n) =>
-  switch (path) {
-  | [] => n
-  | [i, ...path] => findNodeByPathExn(path, List.nth(nodes, i))
-  };

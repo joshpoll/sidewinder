@@ -4,7 +4,7 @@ type node = {
   links: list(Link.lcaPath),
   transform: Node.transform,
   bbox: Node.bbox,
-  render: (Node.bbox, list(React.element)) => React.element,
+  nodeRender: Node.bbox => React.element,
 };
 
 /**
@@ -12,7 +12,8 @@ type node = {
  */
 module MS = Belt.Map.String;
 let rec computeBBoxes =
-        ({uid, nodes, renderingLinks, layoutLinks, layout, computeBBox, render}: LCA.node): node => {
+        ({uid, nodes, renderingLinks, layoutLinks, layout, computeBBox, nodeRender}: LCA.node)
+        : node => {
   let bboxList = List.map(computeBBoxes, nodes);
   let bboxMap = List.map(({uid, bbox}) => (uid, bbox), bboxList);
   let nodeTransforms = layout(bboxMap, layoutLinks);
@@ -27,7 +28,7 @@ let rec computeBBoxes =
   let bbox = computeBBox(nodeBBoxes);
   if (List.length(bboxList) == MS.size(nodeBBoxes)) {
     let nodes = List.map(n => {...n, transform: MS.getExn(nodeTransforms, n.uid)}, bboxList);
-    {uid, nodes, links: renderingLinks, transform: Transform.ident, bbox, render};
+    {uid, nodes, links: renderingLinks, transform: Transform.ident, bbox, nodeRender};
   } else {
     Js.log("layout function doesn't preserve nodes!");
     Js.log2("bboxList", bboxList |> Array.of_list);

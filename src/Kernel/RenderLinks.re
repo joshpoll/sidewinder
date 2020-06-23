@@ -3,45 +3,17 @@ type node = {
   uid: UID.t,
   nodes: list(node),
   links: list(React.element),
-  transform: Node.transform,
+  globalTransform: Node.transform,
   bbox: Node.bbox,
-  render: (Node.bbox, list(React.element)) => React.element,
-};
-module MS = Belt.Map.String;
-
-let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
-  MS.reduce(m2, m1, (m, k, v) => m->MS.set(k, v));
+  nodeRender: Node.bbox => React.element,
 };
 
-let rec computeLCAFrameBBoxAux =
-        (oldTransform: Node.transform, Layout.{uid, nodes, links, transform, bbox, render}) => {
-  let transform: Node.transform =
-    Node.{
-      translate: {
-        x: oldTransform.translate.x +. transform.translate.x,
-        y: oldTransform.translate.y +. transform.translate.y,
-      },
-      scale: {
-        x: oldTransform.scale.x *. transform.scale.x,
-        y: oldTransform.scale.y *. transform.scale.y,
-      },
-    };
-  nodes
-  |> List.map(computeLCAFrameBBoxAux(transform))
-  |> List.fold_left(mapUnion, MS.empty)
-  |> MS.set(_, uid, bbox->Rectangle.transform(transform));
-};
-
-let computeLCAFrameBBox = computeLCAFrameBBoxAux(Transform.init);
-
-/* TODO: adapt for use with transitions. animation transformations must be localized versions of the
-   global diffs */
-let rec computeTransform = (node: Layout.node, path) =>
+let rec computeTransform = (node: RenderNodes.node, path) =>
   switch (path) {
-  | [] => node.bbox
+  | [] => Rectangle.transform(node.bbox, node.globalTransform)
   | [h, ...path] =>
-    let node = List.find((Layout.{uid}) => h == uid, node.nodes);
-    computeTransform(node, path)->Rectangle.transform(node.transform);
+    let node = List.find((RenderNodes.{uid}) => h == uid, node.nodes);
+    computeTransform(node, path);
   };
 
 let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.element =>
@@ -53,8 +25,50 @@ let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.
     lr(~source, ~target);
   };
 
-let rec renderLinks = (Layout.{uid, nodes, links, transform, bbox, render} as n): node => {
+let rec renderLinks =
+        (RenderNodes.{uid, nodes, links, globalTransform, bbox, nodeRender} as n): node => {
   let nodes = List.map(renderLinks, nodes);
   let links = List.map(renderLink(n), links);
-  {uid, nodes, links, transform, bbox, render};
+  {uid, nodes, links, globalTransform, bbox, nodeRender};
+};
+
+/* TODO: factor out this computation so it can be shared by Render and TransitionNode */
+
+let computeSVGTransform =
+    ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
+  /* https://css-tricks.com/transforms-on-svg-elements/ */
+  let scale =
+    "translate("
+    ++ Js.Float.toString(bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.)
+    ++ ", "
+    ++ Js.Float.toString(bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.)
+    ++ ")";
+  let scale = scale ++ " " ++ {j|scale($sx, $sy)|j};
+  let scale =
+    scale
+    ++ " "
+    ++ "translate("
+    ++ Js.Float.toString(-. (bbox->Rectangle.x1 +. bbox->Rectangle.width /. 2.))
+    ++ ", "
+    ++ Js.Float.toString(-. (bbox->Rectangle.y1 +. bbox->Rectangle.height /. 2.))
+    ++ ")";
+
+  let translate = {j|translate($tx, $ty)|j};
+
+  scale ++ " " ++ translate;
+};
+
+let svgTransform = (uid, transform, bbox, r) => {
+  let transform = computeSVGTransform(transform, bbox);
+  <g id={uid ++ "__node"} transform> r </g>;
+};
+
+/* Doesn't allow for late/dynamic visual changes. */
+let rec render = ({uid, nodes, links, globalTransform, bbox, nodeRender}) => {
+  let transform = computeSVGTransform(globalTransform, bbox);
+  <g id=uid>
+    <g id={uid ++ "__node"} transform> {nodeRender(bbox)} </g>
+    <g id={uid ++ "__links"}> {links |> Array.of_list |> React.array} </g>
+    <g id={uid ++ "__children"}> {List.map(render, nodes) |> Array.of_list |> React.array} </g>
+  </g>;
 };

@@ -79,6 +79,6 @@ let mk = (~uid=?, ~nodes, ~xLinkRender, ~yLinkRender, ~xGap, ~yGap, ~xDirection,
         List.combine(uids, transforms) |> Array.of_list |> MS.fromArray;
       },
     ~computeBBox=bs => bs->MS.valuesToArray->Array.to_list->Rectangle.union_list,
-    ~render=(_, links) => {Kernel.defaultLinks(links)},
+    ~nodeRender=_ => React.null,
   );
 };

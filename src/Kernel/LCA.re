@@ -22,7 +22,7 @@ type node = {
   layoutLinks: list(Link.layout),
   layout: (list((UID.t, Node.bbox)), list(Link.layout)) => MS.t(Node.transform),
   computeBBox: MS.t(Node.bbox) => Node.bbox,
-  render: (Node.bbox, list(React.element)) => React.element,
+  nodeRender: Node.bbox => React.element,
 };
 
 let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
@@ -32,7 +32,7 @@ let mapUnion = (m1: MS.t('a), m2: MS.t('a)) => {
 /* pass 1 */
 /* uid -> path */
 let rec computePathMapAux =
-        (path, KernelIR.{uid, nodes, links, layout, computeBBox, render}): MS.t(Path.t) => {
+        (path, KernelIR.{uid, nodes, links, layout, computeBBox, nodeRender}): MS.t(Path.t) => {
   let uids = List.map((KernelIR.{uid}) => uid, nodes);
   nodes
   |> List.combine(_, uids)
@@ -141,7 +141,7 @@ let rec computeLinksMapAux =
 let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBBox, render}) => {
+let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBBox, nodeRender}) => {
   let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
@@ -150,7 +150,7 @@ let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBB
     layoutLinks,
     layout,
     computeBBox,
-    render,
+    nodeRender,
   };
 };
 
@@ -161,12 +161,12 @@ let fromKernel = n => {
 };
 
 let rec toKernel =
-        ({uid, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, render})
+        ({uid, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, nodeRender})
         : KernelIR.node => {
   uid,
   nodes: List.map(toKernel, nodes),
   links: List.map(Link.fromLCAPath, renderingLinks),
   layout,
   computeBBox,
-  render,
+  nodeRender,
 };

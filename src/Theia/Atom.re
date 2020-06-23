@@ -7,5 +7,5 @@ let mk = (~uid=?, ~links=[], r, sizeOffset) =>
     ~links,
     ~layout=(_, _) => MS.empty,
     ~computeBBox=_ => sizeOffset,
-    ~render=(_, _) => r,
+    ~nodeRender=_ => r,
   );
