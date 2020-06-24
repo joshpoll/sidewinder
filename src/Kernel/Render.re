@@ -24,17 +24,12 @@ let computeSVGTransform =
   scale ++ " " ++ translate;
 };
 
-let svgTransform = (uid, transform, bbox, r) => {
-  let transform = computeSVGTransform(transform, bbox);
-  <g id={uid ++ "__node"} transform> r </g>;
-};
-
 /* Doesn't allow for late/dynamic visual changes. */
 let rec convert = (RenderLinks.{uid, nodes, links, globalTransform, bbox, nodeRender}) => {
   let transform = computeSVGTransform(globalTransform, bbox);
   <g id=uid>
     <g id={uid ++ "__node"} transform> {nodeRender(bbox)} </g>
-    <g id={uid ++ "__links"}> {links |> Array.of_list |> React.array} </g>
     <g id={uid ++ "__children"}> {List.map(convert, nodes) |> Array.of_list |> React.array} </g>
+    <g id={uid ++ "__links"}> {links |> Array.of_list |> React.array} </g>
   </g>;
 };

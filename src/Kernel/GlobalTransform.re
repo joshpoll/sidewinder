@@ -17,11 +17,6 @@ let rec computeGlobalTransformAux =
 
 let convert = computeGlobalTransformAux(Transform.init);
 
-/* let svgTransformTransition = (transform, bbox, nextTransform, nextBBox, r) => {
-     let transform = computeSVGTransform(transform, bbox);
-     <g transform> r </g>;
-   }; */
-
 let rec findNodeByUID = (uid, {uid: candidate, nodes} as n) =>
   if (uid == candidate) {
     Some(n);

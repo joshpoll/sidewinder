@@ -1,5 +1,10 @@
 module MS = Belt.Map.String;
 
+let layout = (n: KernelIR.node): Layout.node => n |> LCA.convert |> Layout.convert;
+/* apply transitions between these */
+let renderLayout = (n: Layout.node): React.element =>
+  n |> GlobalTransform.convert |> RenderLinks.convert |> Render.convert;
+
 let render = (n: KernelIR.node): React.element =>
   n
   |> LCA.convert
