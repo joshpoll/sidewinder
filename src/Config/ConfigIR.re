@@ -1,3 +1,6 @@
+/* None = no place, Some(place) = place. no tag = unpainted */
+type kernelPlace = option(Place.t);
+
 /* TODO: add links field. may also need to be an input to rendering */
 type node = {
   /* place is essentially a variable tag. in input config, only occurs at "leaves" i.e. no subnode of a node with a
@@ -12,7 +15,7 @@ type node = {
   /* essentially an ADT constructor ID e.g. bind, ctxt. NOT unique. */
   name: string,
   nodes: list(option(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
-  render: list(option(KernelIR.node)) => KernelIR.node,
+  render: list(option(KernelIR.node(kernelPlace))) => KernelIR.node(kernelPlace),
 };
 
 let mk = (~place=?, ~name, ~nodes, ~render, ()) => {place, name, nodes, render};
