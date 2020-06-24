@@ -15,7 +15,7 @@ let rec computeGlobalTransformAux =
   {uid, nodes, links, globalTransform, bbox, nodeRender};
 };
 
-let computeGlobalTransform = computeGlobalTransformAux(Transform.init);
+let convert = computeGlobalTransformAux(Transform.init);
 
 /* let svgTransformTransition = (transform, bbox, nextTransform, nextBBox, r) => {
      let transform = computeSVGTransform(transform, bbox);
@@ -48,12 +48,3 @@ let rec findNodeByPathExn = (path, {nodes} as n) =>
   | [] => n
   | [i, ...path] => findNodeByPathExn(path, List.nth(nodes, i))
   };
-/*
- /* skips link rendering */
- let rec render = ({uid, nodes, globalTransform, bbox, nodeRender}) => {
-   let transform = computeSVGTransform(globalTransform, bbox);
-   <g id=uid>
-     <g id={uid ++ "__node"} transform> {nodeRender(bbox)} </g>
-     <g id={uid ++ "__children"}> {List.map(render, nodes) |> Array.of_list |> React.array} </g>
-   </g>;
- }; */

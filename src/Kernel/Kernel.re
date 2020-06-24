@@ -2,11 +2,11 @@ module MS = Belt.Map.String;
 
 let render = (n: KernelIR.node): React.element =>
   n
-  |> LCA.fromKernel
-  |> Layout.computeBBoxes
-  |> RenderNodes.computeGlobalTransform
-  |> RenderLinks.renderLinks
-  |> RenderLinks.render;
+  |> LCA.convert
+  |> Layout.convert
+  |> GlobalTransform.convert
+  |> RenderLinks.convert
+  |> Render.convert;
 
 /* TODO: not sure where this should go */
 let defaultLayout = (bboxes, _) =>

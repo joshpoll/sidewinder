@@ -1,4 +1,14 @@
-/* TODO: factor out this computation so it can be shared by Render and TransitionNode */
+/* type node = {
+     uid: UID.t,
+     nodes: list(node),
+     links: list(React.element),
+     transform: Node.transform,
+     /* transform relative to global frame. used for animation */
+     globalTransform: Node.transform,
+     bbox: Node.bbox,
+     renderNode: (Node.bbox, list(React.element)) => React.element,
+     render: (UID.t, list(React.element), path, list(path), Node.bbox, Node.transform, React.element) => React.element
+   }; */
 
 let computeSVGTransform =
     ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
@@ -24,17 +34,10 @@ let computeSVGTransform =
   scale ++ " " ++ translate;
 };
 
-let svgTransform = (uid, transform, bbox, r) => {
+let render = (uid, nodes, ownPath, paths, bbox, transform, r) => {
   let transform = computeSVGTransform(transform, bbox);
-  <g id={uid ++ "__node"} transform> r </g>;
-};
-
-/* Doesn't allow for late/dynamic visual changes. */
-let rec convert = (RenderLinks.{uid, nodes, links, globalTransform, bbox, nodeRender}) => {
-  let transform = computeSVGTransform(globalTransform, bbox);
   <g id=uid>
-    <g id={uid ++ "__node"} transform> {nodeRender(bbox)} </g>
-    <g id={uid ++ "__links"}> {links |> Array.of_list |> React.array} </g>
-    <g id={uid ++ "__children"}> {List.map(convert, nodes) |> Array.of_list |> React.array} </g>
+    <g id={uid ++ "__node"} transform> r </g>
+    <g id={uid ++ "__children"}> {nodes |> Array.of_list |> React.array} </g>
   </g>;
 };

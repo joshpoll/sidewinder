@@ -11,10 +11,10 @@ type node = {
  *  computes the bboxes of the child nodes of the input node
  */
 module MS = Belt.Map.String;
-let rec computeBBoxes =
+let rec convert =
         ({uid, nodes, renderingLinks, layoutLinks, layout, computeBBox, nodeRender}: LCA.node)
         : node => {
-  let bboxList = List.map(computeBBoxes, nodes);
+  let bboxList = List.map(convert, nodes);
   let bboxMap = List.map(({uid, bbox}) => (uid, bbox), bboxList);
   let nodeTransforms = layout(bboxMap, layoutLinks);
   // Js.log2("nodeTransforms", nodeTransforms |> MS.toArray);

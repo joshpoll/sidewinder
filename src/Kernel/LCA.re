@@ -154,7 +154,7 @@ let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBB
   };
 };
 
-let fromKernel = n => {
+let convert = n => {
   let uidToPath = computePathMap(n);
   let pathToLinks = computeLinksMap(uidToPath, n);
   placeLinks(pathToLinks, n);
