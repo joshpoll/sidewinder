@@ -1,6 +1,6 @@
 module MS = Belt.Map.String;
 
-let mk = (~uid=?, ~fill, node, links) => {
+let mk = (~uid=?, ~tag=?, ~fill, node, links) => {
   let nodeRender = bbox => {
     <rect
       x={Js.Float.toString(bbox->Rectangle.x1)}
@@ -12,6 +12,7 @@ let mk = (~uid=?, ~fill, node, links) => {
   };
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes=[node],
     ~links,
     ~layout=Kernel.defaultLayout,

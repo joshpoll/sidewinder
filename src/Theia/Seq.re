@@ -79,9 +79,10 @@ let makeLinks = (linkRender, uids) => {
 /* TODO: need to recenter DownUp and RightLeft so they are contained in the positive quadrant.
    Maybe more reason to have layout take care of that type of stuff. */
 /* TODO: add an alignment flag for beginning/middle/end or something */
-let mk = (~uid=?, ~nodes, ~linkRender, ~gap, ~direction) =>
+let mk = (~uid=?, ~tag=?, ~nodes, ~linkRender, ~gap, ~direction) =>
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes,
     ~links=makeLinks(linkRender, List.map((KernelIR.{uid}) => uid, nodes)),
     ~layout=

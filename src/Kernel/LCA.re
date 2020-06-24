@@ -14,10 +14,10 @@
 
 module MS = Belt.Map.String;
 
-type node = {
+type node('a) = {
   uid: UID.t,
-  /* flow: Flow.t, */
-  nodes: list(node),
+  tag: option('a),
+  nodes: list(node('a)),
   renderingLinks: list(Link.lcaPath),
   layoutLinks: list(Link.layout),
   layout: (list((UID.t, Node.bbox)), list(Link.layout)) => MS.t(Node.transform),
@@ -41,7 +41,8 @@ let rec computePathMapAux =
   |> MS.set(_, uid, path);
 };
 
-let computePathMap = (n: KernelIR.node) => computePathMapAux([n.uid], n)->MS.map(List.rev);
+let computePathMap = (n: KernelIR.node('a)) =>
+  computePathMapAux([n.uid], n)->MS.map(List.rev);
 
 /* [b, a], [b, a] => ((a, a), b) */
 /* [b], [b] => (None, b) */
@@ -141,10 +142,12 @@ let rec computeLinksMapAux =
 let computeLinksMap = (uidToPath, n) => computeLinksMapAux(uidToPath, n)->MS.map(List.rev);
 
 /* TODO: use that map to place links in their proper spots */
-let rec placeLinks = (localLinks, KernelIR.{uid, nodes, links, layout, computeBBox, nodeRender}) => {
+let rec placeLinks =
+        (localLinks, KernelIR.{uid, tag, nodes, links, layout, computeBBox, nodeRender}) => {
   let (renderingLinks, layoutLinks) = List.split(localLinks->MS.getWithDefault(uid, []));
   {
     uid,
+    tag,
     nodes: List.map(placeLinks(localLinks), nodes),
     renderingLinks,
     layoutLinks,
@@ -161,9 +164,10 @@ let convert = n => {
 };
 
 let rec toKernel =
-        ({uid, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, nodeRender})
-        : KernelIR.node => {
+        ({uid, tag, nodes, renderingLinks, layoutLinks: _, layout, computeBBox, nodeRender})
+        : KernelIR.node('a) => {
   uid,
+  tag,
   nodes: List.map(toKernel, nodes),
   links: List.map(Link.fromLCAPath, renderingLinks),
   layout,

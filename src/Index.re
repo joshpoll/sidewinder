@@ -35,6 +35,7 @@ ReactDOMRe.render(
   <svg>
     {Kernel.render(
        Theia.atom(
+         ~tag=None,
          <rect
            x={Js.Float.toString(x)}
            y={Js.Float.toString(y)}

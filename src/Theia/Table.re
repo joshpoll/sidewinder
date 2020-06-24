@@ -16,11 +16,24 @@ let makeTableLinks = (xLinkRender, yLinkRender, uids) => {
    them equally. hopefully this doesn't mess with transformations too much */
 /* nodes is a list of rows */
 /* TODO: add more customization for row and column arrangement */
-let mk = (~uid=?, ~nodes, ~xLinkRender, ~yLinkRender, ~xGap, ~yGap, ~xDirection, ~yDirection, ()) => {
+let mk =
+    (
+      ~uid=?,
+      ~tag=?,
+      ~nodes,
+      ~xLinkRender,
+      ~yLinkRender,
+      ~xGap,
+      ~yGap,
+      ~xDirection,
+      ~yDirection,
+      (),
+    ) => {
   let colLen = List.length(nodes);
   let rowLen = List.length(List.nth(nodes, 0));
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes=List.flatten(nodes),
     ~links=
       makeTableLinks(

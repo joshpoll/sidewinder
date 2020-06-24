@@ -1,7 +1,7 @@
 module MS = Belt.Map.String;
 
 /* TODO: transform must include scaling! */
-let mk = (~uid=?, ~dx=0., ~dy=0., node, links) => {
+let mk = (~uid=?, ~tag=?, ~dx=0., ~dy=0., node, links) => {
   open Rectangle;
   let nodeRender = bbox => {
     <rect
@@ -15,6 +15,7 @@ let mk = (~uid=?, ~dx=0., ~dy=0., node, links) => {
   };
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes=[node],
     ~links,
     ~layout=Kernel.defaultLayout,

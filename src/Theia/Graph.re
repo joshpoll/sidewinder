@@ -89,9 +89,10 @@ let graphLayout =
   |> MS.fromArray;
 };
 
-let mk = (~uid=?, ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
+let mk = (~uid=?, ~tag=?, ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),

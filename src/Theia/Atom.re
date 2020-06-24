@@ -1,8 +1,9 @@
 module MS = Belt.Map.String;
 
-let mk = (~uid=?, ~links=[], r, sizeOffset) =>
+let mk = (~uid=?, ~tag=?, ~links=[], r, sizeOffset) =>
   KernelIR.mk(
     ~uid?,
+    ~tag,
     ~nodes=[],
     ~links,
     ~layout=(_, _) => MS.empty,
