@@ -65,6 +65,7 @@ let layout = ((flow, n)) => {
    output: list of React elements */
 let compile = (flows, ns) => {
   let (flows, ns) = List.combine(flows, ns) |> List.map(layout) |> List.split;
+  let (flows, ns) = (flows @ [[]], ns @ [List.rev(ns) |> List.hd]);
   let nPairs = Fn.mapPairs((a, b) => (a, b), ns);
   let animatedNodes =
     Belt.List.zipBy(flows, nPairs, (flow, (n, next)) => Animate.animate(flow, n, next));
