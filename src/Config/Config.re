@@ -47,15 +47,23 @@ let propagatePlace = (flow: Flow.linear, n) => {
   (flowState^, propagatePlaceOption(Some(n))->Belt.Option.getExn);
 };
 
-let rec lowerOption = on =>
+/* let rec lowerOption = (renderHole, on) =>
+   switch (on) {
+   | None => renderHole
+   | Some({place, nodes, render}) =>
+     let renderedNode = render(List.map(lowerOption, nodes));
+     {...renderedNode, tag: Some(place)};
+   }; */
+
+let rec lowerOption = (renderHole, on) =>
   switch (on) {
-  | None => None
-  | Some({place, nodes, render}) =>
-    let renderedNode = render(List.map(lowerOption, nodes));
-    Some({...renderedNode, tag: Some(place)});
+  | None => renderHole
+  | Some({place, nodes, renderHole, render}) =>
+    let renderedNode = render(List.map(lowerOption(renderHole), nodes));
+    {...renderedNode, tag: Some(place)};
   };
 
-let lower = n => lowerOption(Some(n))->Belt.Option.getExn;
+let lower = (n: node): KernelIR.node(kernelPlace) => lowerOption(n.renderHole, Some(n));
 
 let layout = ((flow, n)) => {
   // let (flow, n) = propagatePlace(flow, n);

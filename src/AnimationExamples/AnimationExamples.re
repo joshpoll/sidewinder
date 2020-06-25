@@ -12,7 +12,7 @@ let transition0 =
   ConfigIR.mk(
     ~name="seq",
     ~nodes=[Some(str(~place="x", "x")), Some(str(~place="y", "y"))],
-    ~render=([x, y]) => Theia.hSeq([orHole(x), orHole(y)]),
+    ~render=Theia.hSeq,
     (),
   );
 
@@ -20,14 +20,41 @@ let transition1 =
   ConfigIR.mk(
     ~name="seq",
     ~nodes=[Some(str(~place="y", "y")), Some(str(~place="x", "x"))],
-    ~render=([y, x]) => Theia.hSeq([orHole(y), orHole(x)]),
+    ~render=Theia.hSeq,
     (),
   );
 
 let delete1 =
+  ConfigIR.mk(~name="seq", ~nodes=[Some(str(~place="y", "y"))], ~render=Theia.hSeq, ());
+
+let nested0 =
   ConfigIR.mk(
     ~name="seq",
-    ~nodes=[Some(str(~place="y", "y"))],
-    ~render=([y]) => Theia.hSeq([orHole(y)]),
+    ~nodes=[
+      Some(str(~place="x", "x")),
+      Some(
+        ConfigIR.mk(
+          ~name="y",
+          ~nodes=[Some(str(~place="y0", "y0")), Some(str(~place="y1", "y1"))],
+          ~render=Theia.hSeq,
+          (),
+        ),
+      ),
+    ],
+    ~render=Theia.vSeq,
+    (),
+  );
+
+/* NOTE! vSeq and hSeq intentionally switched to test complex animations. */
+let nested1 =
+  ConfigIR.mk(
+    ~name="seq",
+    ~nodes=[
+      Some(str(~place="x", "x")),
+      Some(
+        ConfigIR.mk(~name="y", ~nodes=[Some(str(~place="y1", "y1"))], ~render=Theia.vSeq, ()),
+      ),
+    ],
+    ~render=Theia.hSeq,
     (),
   );

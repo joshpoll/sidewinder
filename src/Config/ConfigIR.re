@@ -15,7 +15,14 @@ type node = {
   /* essentially an ADT constructor ID e.g. bind, ctxt. NOT unique. */
   name: string,
   nodes: list(option(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
-  render: list(option(KernelIR.node(kernelPlace))) => KernelIR.node(kernelPlace),
+  renderHole: KernelIR.node(kernelPlace),
+  render: list(KernelIR.node(kernelPlace)) => KernelIR.node(kernelPlace),
 };
 
-let mk = (~place=?, ~name, ~nodes, ~render, ()) => {place, name, nodes, render};
+let mk = (~place=?, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+  place,
+  name,
+  nodes,
+  renderHole: Belt.Option.getWithDefault(renderHole, Theia.hole()),
+  render,
+};

@@ -113,3 +113,14 @@ let configs =
   );
 
 ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
+
+let flows: list(Flow.linear) = [[("x", ["x"]), ("y0", []), ("y1", ["y1"])], []];
+let nodes: list(ConfigIR.node) = [AnimationExamples.nested0, AnimationExamples.nested1];
+
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
+
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
