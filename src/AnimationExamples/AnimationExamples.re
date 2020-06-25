@@ -8,7 +8,7 @@ let orHole = on =>
 let str = (~place=?, s) =>
   ConfigIR.mk(~place?, ~name=s, ~nodes=[], ~render=_ => Theia.str(s), ());
 
-let ex0 =
+let transition0 =
   ConfigIR.mk(
     ~name="seq",
     ~nodes=[Some(str(~place="x", "x")), Some(str(~place="y", "y"))],
@@ -16,10 +16,18 @@ let ex0 =
     (),
   );
 
-let ex1 =
+let transition1 =
   ConfigIR.mk(
     ~name="seq",
     ~nodes=[Some(str(~place="y", "y")), Some(str(~place="x", "x"))],
     ~render=([y, x]) => Theia.hSeq([orHole(y), orHole(x)]),
+    (),
+  );
+
+let delete1 =
+  ConfigIR.mk(
+    ~name="seq",
+    ~nodes=[Some(str(~place="y", "y"))],
+    ~render=([y]) => Theia.hSeq([orHole(y)]),
     (),
   );
