@@ -101,10 +101,4 @@ let configs =
     List.combine(flows, nodes),
   );
 
-let renderedNodes =
-  configs |> List.split |> (((flows, ns)) => Sidewinder.Config.compile(flows, ns));
-
-ReactDOMRe.render(
-  <svg> {renderedNodes |> Array.of_list |> React.array} </svg>,
-  makeContainer("Transition Animation"),
-);
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transition Animation"));
