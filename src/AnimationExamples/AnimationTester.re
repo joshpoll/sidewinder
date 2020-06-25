@@ -34,7 +34,7 @@ let toggle = (AnimationComponentHelper.{curr, next}) =>
 let make = (~padding=10., ~trace) => {
   let (state, dispatch) = React.useReducer(reducer, initialState);
   let (AnimationComponentHelper.{curr, next}, setAnimationState) =
-    React.useState(() => AnimationComponentHelper.{curr: Before, next: Before});
+    React.useState(() => AnimationComponentHelper.initValue);
 
   // Notice that instead of `useEffect`, we have `useEffect0`. See
   // reasonml.github.io/reason-react/docs/en/components#hooks for more info
@@ -59,7 +59,12 @@ let make = (~padding=10., ~trace) => {
   let yOffset = 100.;
   <div>
     <div> {React.string("state: ")} {React.string(string_of_int(state.pos))} </div>
-    <button style=leftButtonStyle onClick={_event => dispatch(Decrement)}>
+    <button
+      style=leftButtonStyle
+      onClick={_event => {
+        dispatch(Decrement);
+        setAnimationState(_ => AnimationComponentHelper.initValue);
+      }}>
       {React.string("<-")}
     </button>
     <button onClick={_event => setAnimationState(toggle)}>
@@ -68,7 +73,12 @@ let make = (~padding=10., ~trace) => {
        | After => React.string("To Before")
        }}
     </button>
-    <button style=rightButtonStyle onClick={_event => dispatch(Increment)}>
+    <button
+      style=rightButtonStyle
+      onClick={_event => {
+        dispatch(Increment);
+        setAnimationState(_ => AnimationComponentHelper.initValue);
+      }}>
       {React.string("->")}
     </button>
     <svg
