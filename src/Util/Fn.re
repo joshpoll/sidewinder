@@ -50,3 +50,10 @@ let rec find = (x, lst) =>
       1 + find(x, t);
     }
   };
+
+/* https://stackoverflow.com/a/53914427 */
+let rec mapPairs = (f: ('a, 'a) => 'b, xs: list('a)): list('b) =>
+  switch (xs) {
+  | [x, y, ...xs] => [f(x, y), ...mapPairs(f, [y, ...xs])]
+  | _ => []
+  };

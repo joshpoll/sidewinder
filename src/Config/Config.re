@@ -1,6 +1,6 @@
 open ConfigIR;
 
-/* TODO: this should also modify flow.
+/* lowers flow
 
      e.g. a |-> [c], b |-> [] becomes
      [a |-> [c], a.0 |-> [c.0], a.1 |-> [c.1]],
@@ -10,39 +10,66 @@ open ConfigIR;
 
 /* TODO: would be nicer with option monad? */
 
-let rec propagatePlaceAux = (p, nodes) => {
-  List.mapi(
-    (i, on) =>
-      switch (on) {
-      | None => None
-      | Some({place, nodes} as n) =>
-        switch (place) {
-        | Some(p') => failwith("Was propagating '" ++ p ++ "', but encountered '" ++ p' ++ "'.")
-        | None =>
-          let place = p ++ "." ++ string_of_int(i);
-          Some({...n, place: Some(place), nodes: propagatePlaceAux(place, nodes)});
-        }
-      },
-    nodes,
-  );
-};
-
-let rec propagatePlaceOption = on =>
-  switch (on) {
-  | None => None
-  | Some({place, nodes} as n) =>
-    switch (place) {
-    | None => Some({...n, nodes: List.map(propagatePlaceOption, nodes)})
-    | Some(p) => Some({...n, nodes: propagatePlaceAux(p, nodes)})
-    }
+let propagatePlace = (flow: Flow.linear, n) => {
+  let flowState = ref(flow);
+  let rec propagatePlaceAux = (p, nodes) => {
+    let pDests = List.assoc(p, flowState^);
+    List.mapi(
+      (i, on) =>
+        switch (on) {
+        | None => None
+        | Some({place, nodes} as n) =>
+          switch (place) {
+          | Some(p') => failwith("Was propagating '" ++ p ++ "', but encountered '" ++ p' ++ "'.")
+          | None =>
+            let place = p ++ "." ++ string_of_int(i);
+            flowState :=
+              [(place, List.map(p => p ++ "." ++ string_of_int(i), pDests)), ...flowState^];
+            Some({...n, place: Some(place), nodes: propagatePlaceAux(place, nodes)});
+          }
+        },
+      nodes,
+    );
   };
-
-let propagatePlace = n => propagatePlaceOption(Some(n))->Belt.Option.getExn;
+  let rec propagatePlaceOption = on =>
+    switch (on) {
+    | None => None
+    | Some({place, nodes} as n) =>
+      switch (place) {
+      | None => Some({...n, nodes: List.map(propagatePlaceOption, nodes)})
+      | Some(p) => Some({...n, nodes: propagatePlaceAux(p, nodes)})
+      }
+    };
+  (flowState^, propagatePlaceOption(Some(n))->Belt.Option.getExn);
+};
 
 let rec lowerOption = on =>
   switch (on) {
   | None => None
-  | Some({nodes, render}) => Some(render(List.map(lowerOption, nodes)))
+  | Some({place, nodes, render}) =>
+    let renderedNode = render(List.map(lowerOption, nodes));
+    Some({...renderedNode, tag: Some(place)});
   };
 
 let lower = n => lowerOption(Some(n))->Belt.Option.getExn;
+
+let layout = ((flow, n)) => {
+  let (flow, n) = propagatePlace(flow, n);
+  let n = lower(n);
+  let (flow, n) = Paint.paint(flow, n);
+  (flow, Kernel.layout(n));
+};
+
+/* TODO [perf]: maybe incrementalize this */
+let compile = (flows, ns) => {
+  let (flows, ns) = List.combine(flows, ns) |> List.map(layout) |> List.split;
+  let nPairs = Fn.mapPairs((a, b) => (a, b), ns);
+  let animatedNodes =
+    Belt.List.zipBy(flows, nPairs, (flow, (n, next)) => Animate.animate(flow, n, next));
+  List.map(Kernel.renderLayout, animatedNodes)
+  |> List.map(r =>
+       <AnimationComponentProvider value=AnimationComponentHelper.{curr: Before, next: Before}>
+         r
+       </AnimationComponentProvider>
+     );
+};
