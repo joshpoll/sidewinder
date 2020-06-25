@@ -54,13 +54,15 @@ let rec lowerOption = on =>
 let lower = n => lowerOption(Some(n))->Belt.Option.getExn;
 
 let layout = ((flow, n)) => {
-  let (flow, n) = propagatePlace(flow, n);
+  // let (flow, n) = propagatePlace(flow, n);
   let n = lower(n);
   let (flow, n) = Paint.paint(flow, n);
   (flow, Kernel.layout(n));
 };
 
 /* TODO [perf]: maybe incrementalize this */
+/* input: list of flows and nodes that have been propagated (and potentially transformed)
+   output: list of React elements */
 let compile = (flows, ns) => {
   let (flows, ns) = List.combine(flows, ns) |> List.map(layout) |> List.split;
   let nPairs = Fn.mapPairs((a, b) => (a, b), ns);
