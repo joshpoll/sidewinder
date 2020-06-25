@@ -14,9 +14,12 @@ let paint = (flow: Flow.linear, n: KernelIR.node(ConfigIR.kernelPlace)) => {
             | None => None
             | Some(None) => Some(None)
             | Some(Some(p)) =>
-              let pDests = List.assoc(p, flowState^);
-              flowState :=
-                [(p, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^];
+              switch (List.assoc_opt(p, flowState^)) {
+              | Some(pDests) =>
+                flowState :=
+                  [(p, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^]
+              | None => ()
+              };
               Some(Some(p ++ "p" ++ string_of_int(i)));
             }
           | Some(tag) => Some(tag)

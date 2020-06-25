@@ -33,40 +33,43 @@ let rec animate =
   | Some(None) => {...n, nodes}
   | Some(Some(tag)) =>
     /* look up tag in flow */
-    let destTags = List.assoc(tag, flow);
-    /* look up dest tags in next */
-    let destNodes = List.map(findNodeByTagExn(next), destTags);
-    /* animate! */
-    let nodeRender =
-      switch (destNodes) {
-      | [] => (
-          bbox => {
-            let renderedElem = n.nodeRender(bbox);
-            <DeleteComponent renderedElem />;
-          }
-        )
-      | _ => (
-          bbox => {
-            let renderedElem = n.nodeRender(bbox);
-            List.map(
-              (destNode: GlobalTransform.node(ConfigIR.kernelPlace)) =>
-                <TransitionComponent
-                  bbox
-                  renderedElem
-                  /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
-                  transform=Transform.ident
-                  nextTransform={Transform.compose(
-                    destNode.globalTransform,
-                    Transform.invert(n.globalTransform),
-                  )}
-                />,
-              destNodes,
-            )
-            |> Array.of_list
-            |> React.array;
-          }
-        )
-      };
-    {...n, nodes, nodeRender};
+    switch (List.assoc_opt(tag, flow)) {
+    | None => {...n, nodes}
+    | Some(destTags) =>
+      /* look up dest tags in next */
+      let destNodes = List.map(findNodeByTagExn(next), destTags);
+      /* animate! */
+      let nodeRender =
+        switch (destNodes) {
+        | [] => (
+            bbox => {
+              let renderedElem = n.nodeRender(bbox);
+              <DeleteComponent renderedElem />;
+            }
+          )
+        | _ => (
+            bbox => {
+              let renderedElem = n.nodeRender(bbox);
+              List.map(
+                (destNode: GlobalTransform.node(ConfigIR.kernelPlace)) =>
+                  <TransitionComponent
+                    bbox
+                    renderedElem
+                    /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
+                    transform=Transform.ident
+                    nextTransform={Transform.compose(
+                      destNode.globalTransform,
+                      Transform.invert(n.globalTransform),
+                    )}
+                  />,
+                destNodes,
+              )
+              |> Array.of_list
+              |> React.array;
+            }
+          )
+        };
+      {...n, nodes, nodeRender};
+    }
   };
 };

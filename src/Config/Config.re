@@ -12,8 +12,8 @@ open ConfigIR;
 
 let propagatePlace = (flow: Flow.linear, n) => {
   let flowState = ref(flow);
-  let rec propagatePlaceAux = (p, nodes) => {
-    let pDests = List.assoc(p, flowState^);
+  let rec propagatePlaceAux = (p, nodes): list(option(ConfigIR.node)) => {
+    let maybePDests = List.assoc_opt(p, flowState^);
     List.mapi(
       (i, on) =>
         switch (on) {
@@ -23,8 +23,12 @@ let propagatePlace = (flow: Flow.linear, n) => {
           | Some(p') => failwith("Was propagating '" ++ p ++ "', but encountered '" ++ p' ++ "'.")
           | None =>
             let place = p ++ "." ++ string_of_int(i);
-            flowState :=
-              [(place, List.map(p => p ++ "." ++ string_of_int(i), pDests)), ...flowState^];
+            switch (maybePDests) {
+            | Some(pDests) =>
+              flowState :=
+                [(place, List.map(p => p ++ "." ++ string_of_int(i), pDests)), ...flowState^]
+            | None => ()
+            };
             Some({...n, place: Some(place), nodes: propagatePlaceAux(place, nodes)});
           }
         },

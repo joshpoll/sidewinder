@@ -91,3 +91,20 @@ ReactDOMRe.render(
   </svg>,
   makeContainer("Nested Sequences"),
 );
+
+let flows: list(Flow.linear) = [[("x", ["x"]), ("y", ["y"])], []];
+let nodes: list(ConfigIR.node) = [TransitionExamples.ex0, TransitionExamples.ex1];
+
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
+
+let renderedNodes =
+  configs |> List.split |> (((flows, ns)) => Sidewinder.Config.compile(flows, ns));
+
+ReactDOMRe.render(
+  <svg> {renderedNodes |> Array.of_list |> React.array} </svg>,
+  makeContainer("Transition Animation"),
+);
