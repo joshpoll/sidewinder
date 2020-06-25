@@ -15,7 +15,7 @@ let mk = (~uid=?, ~tag=?, ~dx=0., ~dy=0., node, links) => {
   };
   KernelIR.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     ~nodes=[node],
     ~links,
     ~layout=Kernel.defaultLayout,

@@ -82,7 +82,7 @@ let makeLinks = (linkRender, uids) => {
 let mk = (~uid=?, ~tag=?, ~nodes, ~linkRender, ~gap, ~direction) =>
   KernelIR.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     ~nodes,
     ~links=makeLinks(linkRender, List.map((KernelIR.{uid}) => uid, nodes)),
     ~layout=

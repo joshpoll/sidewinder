@@ -3,7 +3,7 @@ let mk = (~uid=?, ~tag=?, s) => {
   let height = 12.5;
   Atom.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     <text
       textAnchor="middle"
       dominantBaseline="middle"

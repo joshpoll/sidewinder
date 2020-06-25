@@ -92,7 +92,7 @@ let graphLayout =
 let mk = (~uid=?, ~tag=?, ~nodes, ~links, ~gap=?, ~linkDistance=?, ~constraints) =>
   KernelIR.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     ~nodes,
     ~links,
     ~layout=graphLayout(~constraints, ~gap, ~linkDistance),

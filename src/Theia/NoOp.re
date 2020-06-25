@@ -3,7 +3,7 @@ module MS = Belt.Map.String;
 let mk = (~uid=?, ~tag=?, node, links) => {
   KernelIR.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     ~nodes=[node],
     ~links,
     ~layout=Kernel.defaultLayout,

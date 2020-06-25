@@ -33,7 +33,7 @@ let mk =
   let rowLen = List.length(List.nth(nodes, 0));
   KernelIR.mk(
     ~uid?,
-    ~tag,
+    ~tag?,
     ~nodes=List.flatten(nodes),
     ~links=
       makeTableLinks(
