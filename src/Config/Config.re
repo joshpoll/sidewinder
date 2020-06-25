@@ -68,6 +68,7 @@ let compile = (flows, ns) => {
   let nPairs = Fn.mapPairs((a, b) => (a, b), ns);
   let animatedNodes =
     Belt.List.zipBy(flows, nPairs, (flow, (n, next)) => Animate.animate(flow, n, next));
+  /* TODO: maybe separate this step out? That way consumer can choose when to render and can operate used layout version for dynamic customizations. */
   List.map(Kernel.renderLayout, animatedNodes)
   |> List.map(r =>
        <AnimationComponentProvider value=AnimationComponentHelper.{curr: Before, next: Before}>
