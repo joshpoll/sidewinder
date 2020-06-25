@@ -20,7 +20,8 @@ let propagatePlace = (flow: Flow.linear, n) => {
         | None => None
         | Some({place, nodes} as n) =>
           switch (place) {
-          | Some(p') => failwith("Was propagating '" ++ p ++ "', but encountered '" ++ p' ++ "'.")
+          /* If the node already has a place, we're done propagating the previous place and start propagating this place */
+          | Some(place) => Some({...n, nodes: propagatePlaceAux(place, nodes)})
           | None =>
             let place = p ++ "." ++ string_of_int(i);
             switch (maybePDests) {
