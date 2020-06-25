@@ -91,36 +91,36 @@ ReactDOMRe.render(
   </svg>,
   makeContainer("Nested Sequences"),
 );
+/*
+ let flows: list(Flow.linear) = [[("x", ["x"]), ("y", ["y"])], []];
+ let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.transition1];
 
-let flows: list(Flow.linear) = [[("x", ["x"]), ("y", ["y"])], []];
-let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.transition1];
+ let configs =
+   List.map(
+     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+     List.combine(flows, nodes),
+   );
 
-let configs =
-  List.map(
-    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-    List.combine(flows, nodes),
-  );
+ ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transition Animation"));
 
-ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transition Animation"));
+ let flows: list(Flow.linear) = [[("x", []), ("y", ["y"])], []];
+ let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.delete1];
 
-let flows: list(Flow.linear) = [[("x", []), ("y", ["y"])], []];
-let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.delete1];
+ let configs =
+   List.map(
+     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+     List.combine(flows, nodes),
+   );
 
-let configs =
-  List.map(
-    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-    List.combine(flows, nodes),
-  );
+ ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
 
-ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
+ let flows: list(Flow.linear) = [[("x", ["x"]), ("y0", []), ("y1", ["y1"])], []];
+ let nodes: list(ConfigIR.node) = [AnimationExamples.nested0, AnimationExamples.nested1];
 
-let flows: list(Flow.linear) = [[("x", ["x"]), ("y0", []), ("y1", ["y1"])], []];
-let nodes: list(ConfigIR.node) = [AnimationExamples.nested0, AnimationExamples.nested1];
+ let configs =
+   List.map(
+     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+     List.combine(flows, nodes),
+   );
 
-let configs =
-  List.map(
-    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-    List.combine(flows, nodes),
-  );
-
-ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
+ ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation")); */
