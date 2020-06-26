@@ -36,7 +36,7 @@ let rec convert =
   } else {
     Js.log("layout function doesn't preserve nodes!");
     Js.log2("bboxList", bboxList |> Array.of_list);
-    Js.log2("nodeBBoxes", nodeBBoxes);
+    Js.log2("nodeBBoxes", nodeBBoxes->MS.toArray);
     assert(false);
   };
 };
