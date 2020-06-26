@@ -6,7 +6,7 @@ let mk = (~uid=?, ~tag=?, ~links=[], r, sizeOffset) =>
     ~tag?,
     ~nodes=[],
     ~links,
-    ~layout=(_, _) => MS.empty,
+    ~layout=Kernel.defaultLayout,
     ~computeBBox=_ => sizeOffset,
     ~nodeRender=_ => r,
   );
