@@ -45,7 +45,9 @@ let propagatePlace = (flow: Flow.linear, n) => {
       | Some(p) => Some({...n, nodes: propagatePlaceAux(p, nodes)})
       }
     };
-  (flowState^, propagatePlaceOption(Some(n))->Belt.Option.getExn);
+  /* sequencing for flowState mutation */
+  let n = propagatePlaceOption(Some(n))->Belt.Option.getExn;
+  (flowState^, n);
 };
 
 /* let rec lowerOption = (renderHole, on) =>

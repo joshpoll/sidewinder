@@ -31,5 +31,7 @@ let paint = (flow: Flow.linear, n: KernelIR.node(ConfigIR.kernelPlace)) => {
       nodes,
     );
   };
-  (flowState^, {...n, nodes: paintAux(n.tag, n.nodes)});
+  /* sequencing for flowState mutation */
+  let n = {...n, nodes: paintAux(n.tag, n.nodes)};
+  (flowState^, n);
 };
