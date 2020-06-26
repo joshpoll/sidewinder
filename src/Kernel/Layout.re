@@ -34,7 +34,7 @@ let rec convert =
     let nodes = List.map(n => {...n, transform: MS.getExn(nodeTransforms, n.uid)}, bboxList);
     {uid, tag, nodes, links: renderingLinks, transform: Transform.ident, bbox, nodeRender};
   } else {
-    Js.log("layout function doesn't preserve nodes!");
+    Js.log2("layout function doesn't preserve nodes!", tag);
     Js.log2("bboxList", bboxList |> Array.of_list);
     Js.log2("nodeBBoxes", nodeBBoxes->MS.toArray);
     assert(false);
