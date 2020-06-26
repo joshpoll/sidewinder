@@ -23,6 +23,6 @@ let mk = (~place=?, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
   place,
   name,
   nodes,
-  renderHole: Belt.Option.getWithDefault(renderHole, Theia.hole()),
+  renderHole: Belt.Option.getWithDefault(renderHole, Theia.hole(~tag=None, ())),
   render,
 };
