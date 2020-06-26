@@ -16,7 +16,9 @@ let rec findNodeByTag =
 
 let findNodeByTagExn = (n, t) =>
   switch (findNodeByTag(n, t)) {
-  | None => failwith("couldn't find flowTag: " ++ t)
+  | None =>
+    Js.log2("failure while searching", n);
+    failwith("couldn't find flowTag: " ++ t);
   | Some(n) => n
   };
 
