@@ -14,13 +14,14 @@ let paint = (flow: Flow.linear, n: KernelIR.node(ConfigIR.kernelPlace)) => {
             | None => None
             | Some(None) => Some(None)
             | Some(Some(p)) =>
+              let place = p ++ "p" ++ string_of_int(i);
               switch (List.assoc_opt(p, flowState^)) {
               | Some(pDests) =>
                 flowState :=
-                  [(p, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^]
+                  [(place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^]
               | None => ()
               };
-              Some(Some(p ++ "p" ++ string_of_int(i)));
+              Some(Some(place));
             }
           | Some(tag) => Some(tag)
           };
