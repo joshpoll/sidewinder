@@ -85,3 +85,10 @@ let compile = (flows, ns) => {
   /* TODO: maybe separate this step out? That way consumer can choose when to render and can operate used layout version for dynamic customizations. */
   List.map(Kernel.renderLayout, animatedNodes);
 };
+
+let compileTransition = (n1, flow, n2) => {
+  let (flow, n1) = layout((flow, n1));
+  let (_, n2) = layout(([], n2));
+  let animatedNode = Animate.animate(flow, n1, n2);
+  Kernel.renderLayout(animatedNode);
+};
