@@ -58,9 +58,9 @@ let propagatePlace = (flow: Flow.linear, n) => {
      {...renderedNode, tag: Some(place)};
    }; */
 
-let rec lowerOption = (renderHole: KernelIR.node(ConfigIR.kernelPlace), on) =>
+let rec lowerOption = (renderHole: unit => KernelIR.node(ConfigIR.kernelPlace), on) =>
   switch (on) {
-  | None => {...renderHole, tag: Some(None)}
+  | None => {...renderHole(), tag: Some(None)}
   | Some({place, nodes, renderHole, render}) =>
     let renderedNode = render(List.map(lowerOption(renderHole), nodes));
     {...renderedNode, tag: Some(place)};
