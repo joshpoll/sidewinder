@@ -51,7 +51,7 @@ let make = (~padding=10., ~trace) => {
     None;
   });
 
-  let swTrace = trace |> List.split |> (((flows, ns)) => Sidewinder.Config.compile(flows, ns));
+  let swTrace = trace |> List.split |> (((flows, ns)) => Config.compile(flows, ns));
   let renderedConfig = List.nth(swTrace, state.pos);
   let width = 1000.;
   let height = 300.;
