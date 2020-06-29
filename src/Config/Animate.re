@@ -1,5 +1,9 @@
 let rec findNodeByTag =
-        (GlobalTransform.{tag, nodes} as n: GlobalTransform.node(ConfigIR.kernelPlace), t) =>
+        (
+          Bobcat.GlobalTransform.{tag, nodes} as n:
+            Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
+          t,
+        ) =>
   switch (tag) {
   | Some(Some(p)) when t == p => Some(n)
   | _ =>
@@ -25,10 +29,10 @@ let findNodeByTagExn = (n, t) =>
 let rec animate =
         (
           flow: Flow.linear,
-          n: GlobalTransform.node(ConfigIR.kernelPlace),
-          next: GlobalTransform.node(ConfigIR.kernelPlace),
+          n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
+          next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
         )
-        : GlobalTransform.node(ConfigIR.kernelPlace) => {
+        : Bobcat.GlobalTransform.node(ConfigIR.kernelPlace) => {
   let nodes = List.map(animate(flow, _, next), n.nodes);
   switch (n.tag) {
   | None => failwith("All nodes should be painted!")
@@ -53,16 +57,16 @@ let rec animate =
             bbox => {
               let renderedElem = n.nodeRender(bbox);
               List.mapi(
-                (i, destNode: GlobalTransform.node(ConfigIR.kernelPlace)) =>
+                (i, destNode: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) =>
                   <TransitionComponent
                     key={n.uid ++ string_of_int(i)}
                     bbox
                     renderedElem
                     /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
-                    transform=Transform.ident
-                    nextTransform={Transform.compose(
+                    transform=Bobcat.Transform.ident
+                    nextTransform={Bobcat.Transform.compose(
                       destNode.globalTransform,
-                      Transform.invert(n.globalTransform),
+                      Bobcat.Transform.invert(n.globalTransform),
                     )}
                   />,
                 destNodes,

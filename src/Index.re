@@ -27,100 +27,61 @@ let makeContainer = text => {
   content;
 };
 
-let x = 10.;
-let y = 30.;
-let width = 200.;
-let height = 100.;
-ReactDOMRe.render(
-  <svg>
-    {Kernel.render(
-       Theia.atom(
-         ~tag=None,
-         <rect
-           x={Js.Float.toString(x)}
-           y={Js.Float.toString(y)}
-           width={Js.Float.toString(width)}
-           height={Js.Float.toString(height)}
-           stroke="black"
-           strokeDasharray="4"
-           strokeWidth="3"
-           fill="magenta"
-         />,
-         Rectangle.fromPointSize(~x, ~y, ~width, ~height),
-       ),
-     )}
-  </svg>,
-  makeContainer("Theia Atom"),
-);
+let flows: list(Flow.linear) = [[("x", ["x"]), ("y", ["y"])], []];
+let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.transition1];
 
-ReactDOMRe.render(
-  <svg>
-    {Kernel.render(
-       Theia.box(
-         ~dx=5.,
-         ~dy=5.,
-         Theia.atom(
-           <rect
-             x={Js.Float.toString(x)}
-             y={Js.Float.toString(y)}
-             width={Js.Float.toString(width)}
-             height={Js.Float.toString(height)}
-             stroke="black"
-             strokeDasharray="4"
-             strokeWidth="3"
-             fill="magenta"
-           />,
-           Rectangle.fromPointSize(~x, ~y, ~width, ~height),
-         ),
-         [],
-       ),
-     )}
-  </svg>,
-  makeContainer("Theia Box"),
-);
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
 
-ReactDOMRe.render(<svg> {Kernel.render(Theia.str("foo"))} </svg>, makeContainer("Theia Str"));
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transition Animation"));
 
-ReactDOMRe.render(
-  <svg>
-    <g transform="translate(50, 50)">
-      {Kernel.render(
-         Theia.hSeq([Theia.vSeq([Theia.str("foo"), Theia.str("foo")]), Theia.str("bar")]),
-       )}
-    </g>
-  </svg>,
-  makeContainer("Nested Sequences"),
-);
-/*
- let flows: list(Flow.linear) = [[("x", ["x"]), ("y", ["y"])], []];
- let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.transition1];
+let flows: list(Flow.linear) = [[("x", []), ("y", ["y"])], []];
+let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.delete1];
 
- let configs =
-   List.map(
-     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-     List.combine(flows, nodes),
-   );
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
 
- ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transition Animation"));
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
 
- let flows: list(Flow.linear) = [[("x", []), ("y", ["y"])], []];
- let nodes: list(ConfigIR.node) = [AnimationExamples.transition0, AnimationExamples.delete1];
+let flows: list(Flow.linear) = [[("x", ["x"]), ("y0", []), ("y1", ["y1"])], []];
+let nodes: list(ConfigIR.node) = [AnimationExamples.nested0, AnimationExamples.nested1];
 
- let configs =
-   List.map(
-     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-     List.combine(flows, nodes),
-   );
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
 
- ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation"));
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Nested Animation"));
 
- let flows: list(Flow.linear) = [[("x", ["x"]), ("y0", []), ("y1", ["y1"])], []];
- let nodes: list(ConfigIR.node) = [AnimationExamples.nested0, AnimationExamples.nested1];
+let flows: list(Flow.linear) = [[("box", ["box"]), ("y", ["y"])], []];
+let nodes: list(ConfigIR.node) = [AnimationExamples.boxed0, AnimationExamples.boxed1];
 
- let configs =
-   List.map(
-     ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
-     List.combine(flows, nodes),
-   );
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
 
- ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Deletion Animation")); */
+Js.log(configs |> Array.of_list);
+
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Boxed Animation"));
+
+let flows: list(Flow.linear) = [[]];
+let nodes: list(ConfigIR.node) = [TransformationExamples.add];
+
+let configs =
+  List.map(
+    ((flow, node)) => Sidewinder.Config.propagatePlace(flow, node),
+    List.combine(flows, nodes),
+  );
+
+Js.log(configs |> Array.of_list);
+
+ReactDOMRe.render(<AnimationTester trace=configs />, makeContainer("Transformation"));

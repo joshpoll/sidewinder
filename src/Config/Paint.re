@@ -1,11 +1,11 @@
 /* fills in flow in kernel nodes that were untagged. similar to propagate but at the Kernel IR level */
-let paint = (flow: Flow.linear, n: KernelIR.node(ConfigIR.kernelPlace)) => {
+let paint = (flow: Flow.linear, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace)) => {
   let flowState = ref(flow);
   let rec paintAux =
-          (parentTag, nodes: list(KernelIR.node(ConfigIR.kernelPlace)))
-          : list(KernelIR.node(ConfigIR.kernelPlace)) => {
+          (parentTag, nodes: list(Bobcat.KernelIR.node(ConfigIR.kernelPlace)))
+          : list(Bobcat.KernelIR.node(ConfigIR.kernelPlace)) => {
     List.mapi(
-      (i, KernelIR.{tag, nodes} as n) => {
+      (i, Bobcat.KernelIR.{tag, nodes} as n) => {
         let tag =
           switch (tag) {
           /* unpainted: inherit from parent, add to flowState if necessary */

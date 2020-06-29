@@ -16,14 +16,14 @@ type node = {
   name: string,
   nodes: list(option(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
   /* thunked so uid is regenerated */
-  renderHole: unit => KernelIR.node(kernelPlace),
-  render: list(KernelIR.node(kernelPlace)) => KernelIR.node(kernelPlace),
+  renderHole: unit => Bobcat.KernelIR.node(kernelPlace),
+  render: list(Bobcat.KernelIR.node(kernelPlace)) => Bobcat.KernelIR.node(kernelPlace),
 };
 
 let mk = (~place=?, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
   place,
   name,
   nodes,
-  renderHole: Belt.Option.getWithDefault(renderHole, () => Theia.hole()),
+  renderHole: Belt.Option.getWithDefault(renderHole, () => Bobcat.Theia.hole()),
   render,
 };

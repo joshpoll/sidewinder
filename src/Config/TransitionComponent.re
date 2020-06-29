@@ -1,4 +1,5 @@
 open SpringHelper;
+open Bobcat;
 
 module SpringHook =
   Spring.MakeSpring({
@@ -7,7 +8,7 @@ module SpringHook =
   });
 
 let computeSVGTransform =
-    ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Node.transform, bbox) => {
+    ({translate: {x: tx, y: ty}, scale: {x: sx, y: sy}}: Bobcat.Node.transform, bbox) => {
   /* https://css-tricks.com/transforms-on-svg-elements/ */
   let scale =
     "translate("
@@ -45,10 +46,10 @@ let computeSVGTransformFlattened = (bbox, tx, ty, sx, sy) =>
 [@react.component]
 let make =
     (
-      ~bbox: Sidewinder.Node.bbox,
+      ~bbox: Bobcat.Node.bbox,
       ~renderedElem: React.element,
-      ~transform: Sidewinder.Node.transform,
-      ~nextTransform: Sidewinder.Node.transform,
+      ~transform: Bobcat.Node.transform,
+      ~nextTransform: Bobcat.Node.transform,
     ) => {
   let AnimationComponentHelper.{curr, next} = AnimationComponentHelper.useAnimation();
 

@@ -21,7 +21,8 @@
   "namespace": true,
   "bs-dependencies": [
     "reason-react",
-    "bs-react-spring"
+    "bs-react-spring",
+    "bobcat"
   ],
   "refmt": 3
 }
