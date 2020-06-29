@@ -55,6 +55,7 @@ let rec animate =
               List.map(
                 (destNode: GlobalTransform.node(ConfigIR.kernelPlace)) =>
                   <TransitionComponent
+                    key={n.uid}
                     bbox
                     renderedElem
                     /* seems like either nodeRender should have control over transform or else should remove transform arg from this */

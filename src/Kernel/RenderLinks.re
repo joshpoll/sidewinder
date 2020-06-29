@@ -21,8 +21,10 @@ let renderLink = (node, Link.{source, target, linkRender}: Link.lcaPath): React.
   switch (linkRender) {
   | None => <> </>
   | Some(lr) =>
+    let key = List.fold_left((++), "", source) ++ List.fold_left((++), "", target);
     let source = computeTransform(node, source);
     let target = computeTransform(node, target);
+    /* <g key> {lr(~source, ~target)} </g>; */
     lr(~source, ~target);
   };
 

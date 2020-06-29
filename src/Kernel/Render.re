@@ -27,9 +27,14 @@ let computeSVGTransform =
 /* Doesn't allow for late/dynamic visual changes. */
 let rec convert = (RenderLinks.{uid, nodes, links, globalTransform, bbox, nodeRender}) => {
   let transform = computeSVGTransform(globalTransform, bbox);
-  <g id=uid>
+  <g id=uid key=uid>
     <g id={uid ++ "__node"} transform> {nodeRender(bbox)} </g>
     <g id={uid ++ "__children"}> {List.map(convert, nodes) |> Array.of_list |> React.array} </g>
-    <g id={uid ++ "__links"}> {links |> Array.of_list |> React.array} </g>
+    <g id={uid ++ "__links"}>
+      {links
+       |> List.mapi((i, l) => <g key={uid ++ string_of_int(i)}> l </g>)
+       |> Array.of_list
+       |> React.array}
+    </g>
   </g>;
 };
