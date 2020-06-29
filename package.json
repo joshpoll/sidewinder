@@ -16,6 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "bobcat": "github:joshpoll/bobcat",
     "bs-react-spring": "^0.4.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
