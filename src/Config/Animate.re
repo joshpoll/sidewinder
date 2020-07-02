@@ -33,10 +33,11 @@ let rec animateAppear =
   | None => failwith("All nodes should be painted!")
   | Some(None) => {
       ...next,
+      uid: next.uid ++ "__next",
       nodes,
       nodeRender: bbox => <AppearComponent renderedElem={next.nodeRender(bbox)} />,
     }
-  | Some(Some(_)) => {...next, nodes, nodeRender: _ => React.null}
+  | Some(Some(_)) => {...next, uid: next.uid ++ "__next", nodes, nodeRender: _ => React.null}
   };
 };
 
