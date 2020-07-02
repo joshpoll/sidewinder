@@ -88,14 +88,9 @@ let compile = (flows, ns) => {
   List.map(Bobcat.Kernel.renderLayout, animatedNodes);
 };
 
-let compileTransition = (~debug=false, n1, flow, n2) => {
+let compileTransition = (n1, flow, n2) => {
   let (flow, n1) = layout((flow, n1));
   let (_, n2) = layout(([], n2));
-  if (debug) {
-    Js.log2("compileTransition-n1", n1);
-    Js.log2("compileTransition-flow", flow |> Array.of_list);
-    Js.log2("compileTransition-n2", n2);
-  };
   let animatedNode = Animate.animate(flow, n1, n2);
   Bobcat.Kernel.renderLayout(animatedNode);
 };
