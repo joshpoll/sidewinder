@@ -26,57 +26,90 @@ let findNodeByTagExn = (n, t) =>
   | Some(n) => n
   };
 
-let rec animate =
-        (
-          flow: Flow.linear,
-          n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
-          next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
-        )
-        : Bobcat.GlobalTransform.node(ConfigIR.kernelPlace) => {
-  let nodes = List.map(animate(flow, _, next), n.nodes);
-  switch (n.tag) {
+let rec animateAppear =
+        (flow: Flow.linear, next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) => {
+  let nodes = List.map(animateAppear(flow), next.nodes);
+  switch (next.tag) {
   | None => failwith("All nodes should be painted!")
-  | Some(None) => {...n, nodes}
-  | Some(Some(tag)) =>
-    /* look up tag in flow */
-    switch (List.assoc_opt(tag, flow)) {
-    | None => {...n, nodes}
-    | Some(destTags) =>
-      /* look up dest tags in next */
-      let destNodes = List.map(findNodeByTagExn(next), destTags);
-      /* animate! */
-      let nodeRender =
-        switch (destNodes) {
-        | [] => (
-            bbox => {
-              let renderedElem = n.nodeRender(bbox);
-              <DeleteComponent renderedElem />;
-            }
-          )
-        | _ => (
-            bbox => {
-              let renderedElem = n.nodeRender(bbox);
-              List.mapi(
-                (i, destNode: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) =>
-                  <TransitionComponent
-                    key={n.uid ++ string_of_int(i)}
-                    bbox
-                    renderedElem
-                    /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
-                    transform=Bobcat.Transform.ident
-                    nextTransform={Bobcat.Transform.compose(
-                      destNode.globalTransform,
-                      Bobcat.Transform.invert(n.globalTransform),
-                    )}
-                  />,
-                destNodes,
-              )
-              |> Array.of_list
-              |> React.array;
-            }
-          )
-        };
-      {...n, nodes, nodeRender};
+  | Some(None) => {
+      ...next,
+      nodes,
+      nodeRender: bbox => <AppearComponent renderedElem={next.nodeRender(bbox)} />,
     }
+  | Some(Some(_)) => {...next, nodes, nodeRender: _ => React.null}
+  };
+};
+
+let animate =
+    (
+      flow: Flow.linear,
+      n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
+      next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
+    ) => {
+  let rec animateAux =
+          (n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace))
+          : Bobcat.GlobalTransform.node(ConfigIR.kernelPlace) => {
+    let nodes = List.map(animateAux, n.nodes);
+    switch (n.tag) {
+    | None => failwith("All nodes should be painted!")
+    | Some(None) => {
+        ...n,
+        nodes,
+        nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />,
+      }
+    | Some(Some(tag)) =>
+      /* look up tag in flow */
+      switch (List.assoc_opt(tag, flow)) {
+      | None => {...n, nodes}
+      | Some(destTags) =>
+        /* look up dest tags in next */
+        let destNodes = List.map(findNodeByTagExn(next), destTags);
+        /* animate! */
+        let nodeRender =
+          switch (destNodes) {
+          | [] => (
+              bbox => {
+                let renderedElem = n.nodeRender(bbox);
+                <DeleteComponent renderedElem />;
+              }
+            )
+          | _ => (
+              bbox => {
+                let renderedElem = n.nodeRender(bbox);
+                List.mapi(
+                  (i, destNode: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) =>
+                    <TransitionComponent
+                      key={n.uid ++ string_of_int(i)}
+                      bbox
+                      renderedElem
+                      /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
+                      transform=Bobcat.Transform.ident
+                      nextTransform={Bobcat.Transform.compose(
+                        destNode.globalTransform,
+                        Bobcat.Transform.invert(n.globalTransform),
+                      )}
+                    />,
+                  destNodes,
+                )
+                |> Array.of_list
+                |> React.array;
+              }
+            )
+          };
+        {...n, nodes, nodeRender};
+      }
+    };
+  };
+  /* TODO: return a NoOp node that combines the animate node with the appearing nodes */
+  let animateN = animateAux(n);
+  let appearingNodes = animateAppear(flow, next);
+  Bobcat.GlobalTransform.{
+    uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
+    tag: Some(None),
+    nodes: [animateN, appearingNodes],
+    links: [],
+    globalTransform: Bobcat.Transform.ident,
+    bbox: Bobcat.Rectangle.union(animateN.bbox, appearingNodes.bbox),
+    nodeRender: _ => React.null,
   };
 };
