@@ -1,9 +1,5 @@
 let rec findNodeByTag =
-        (
-          Bobcat.GlobalTransform.{tag, nodes} as n:
-            Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
-          t,
-        ) =>
+        (Bobcat.LayoutIR.{tag, nodes} as n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), t) =>
   switch (tag) {
   | Some(Some(p)) when t == p => Some(n)
   | _ =>
@@ -26,8 +22,7 @@ let findNodeByTagExn = (n, t) =>
   | Some(n) => n
   };
 
-let rec animateAppear =
-        (flow: Flow.linear, next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) => {
+let rec animateAppear = (flow: Flow.linear, next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
   let nodes = List.map(animateAppear(flow), next.nodes);
   switch (next.tag) {
   | None => failwith("All nodes should be painted!")
@@ -45,12 +40,12 @@ let animate =
     (
       ~debug=false,
       flow: Flow.linear,
-      n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
-      next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
+      n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
+      next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
     ) => {
   let rec animateAux =
-          (n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace))
-          : Bobcat.GlobalTransform.node(ConfigIR.kernelPlace) => {
+          (n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace))
+          : Bobcat.LayoutIR.node(ConfigIR.kernelPlace) => {
     let nodes = List.map(animateAux, n.nodes);
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
@@ -91,7 +86,7 @@ let animate =
               bbox => {
                 let renderedElem = n.nodeRender(bbox);
                 List.mapi(
-                  (i, destNode: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace)) =>
+                  (i, destNode: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) =>
                     <TransitionComponent
                       key={n.uid ++ string_of_int(i)}
                       bbox
@@ -99,8 +94,8 @@ let animate =
                       /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
                       transform=Bobcat.Transform.ident
                       nextTransform={Bobcat.Transform.compose(
-                        destNode.globalTransform,
-                        Bobcat.Transform.invert(n.globalTransform),
+                        destNode.transform,
+                        Bobcat.Transform.invert(n.transform),
                       )}
                     />,
                   destNodes,
@@ -117,12 +112,12 @@ let animate =
   /* TODO: return a NoOp node that combines the animate node with the appearing nodes */
   let animateN = animateAux(n);
   let appearingNodes = animateAppear(flow, next);
-  Bobcat.GlobalTransform.{
+  Bobcat.LayoutIR.{
     uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
     tag: Some(None),
     nodes: [animateN, appearingNodes],
     links: [],
-    globalTransform: Bobcat.Transform.ident,
+    transform: Bobcat.Transform.ident,
     bbox: Bobcat.Rectangle.union(animateN.bbox, appearingNodes.bbox),
     nodeRender: _ => React.null,
   };
