@@ -43,6 +43,7 @@ let rec animateAppear =
 
 let animate =
     (
+      ~debug=false,
       flow: Flow.linear,
       n: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
       next: Bobcat.GlobalTransform.node(ConfigIR.kernelPlace),
@@ -53,28 +54,40 @@ let animate =
     let nodes = List.map(animateAux, n.nodes);
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
-    | Some(None) => {
-        ...n,
-        nodes,
-        nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />,
-      }
+    | Some(None) =>
+      if (debug) {
+        Js.log2("vanish:", n.uid);
+      };
+      {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
     | Some(Some(tag)) =>
       /* look up tag in flow */
       switch (List.assoc_opt(tag, flow)) {
-      | None => {...n, nodes}
+      | None =>
+        if (debug) {
+          Js.log3("tag not in flow:", tag, flow |> Array.of_list);
+        };
+        {...n, nodes};
       | Some(destTags) =>
         /* look up dest tags in next */
         let destNodes = List.map(findNodeByTagExn(next), destTags);
         /* animate! */
         let nodeRender =
           switch (destNodes) {
-          | [] => (
+          | [] =>
+            if (debug) {
+              Js.log2("deleting tag:", tag);
+            };
+            (
               bbox => {
                 let renderedElem = n.nodeRender(bbox);
                 <DeleteComponent renderedElem />;
               }
-            )
-          | _ => (
+            );
+          | _ =>
+            if (debug) {
+              Js.log2("persisting or copying tag:", tag);
+            };
+            (
               bbox => {
                 let renderedElem = n.nodeRender(bbox);
                 List.mapi(
@@ -95,7 +108,7 @@ let animate =
                 |> Array.of_list
                 |> React.array;
               }
-            )
+            );
           };
         {...n, nodes, nodeRender};
       }

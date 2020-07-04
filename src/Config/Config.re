@@ -78,19 +78,19 @@ let layout = ((flow, n)) => {
 /* TODO [perf]: maybe incrementalize this */
 /* input: list of flows and nodes that have been propagated (and potentially transformed)
    output: list of React elements */
-let compile = (flows, ns) => {
+let compile = (~debug=false, flows, ns) => {
   let (flows, ns) = List.combine(flows, ns) |> List.map(layout) |> List.split;
   let (flows, ns) = (flows @ [[]], ns @ [List.rev(ns) |> List.hd]);
   let nPairs = Fn.mapPairs((a, b) => (a, b), ns);
   let animatedNodes =
-    Belt.List.zipBy(flows, nPairs, (flow, (n, next)) => Animate.animate(flow, n, next));
+    Belt.List.zipBy(flows, nPairs, (flow, (n, next)) => Animate.animate(~debug, flow, n, next));
   /* TODO: maybe separate this step out? That way consumer can choose when to render and can operate used layout version for dynamic customizations. */
   List.map(Bobcat.Kernel.renderLayout, animatedNodes);
 };
 
-let compileTransition = (n1, flow, n2) => {
+let compileTransition = (~debug=false, n1, flow, n2) => {
   let (flow, n1) = layout((flow, n1));
   let (_, n2) = layout(([], n2));
-  let animatedNode = Animate.animate(flow, n1, n2);
+  let animatedNode = Animate.animate(~debug, flow, n1, n2);
   Bobcat.Kernel.renderLayout(animatedNode);
 };
