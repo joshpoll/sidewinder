@@ -37,6 +37,47 @@ let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
   };
 };
 
+let patRender = (~debug=false, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), tag, destNodes) => {
+  switch (destNodes) {
+  | [] =>
+    if (debug) {
+      Js.log2("deleting tag:", tag);
+    };
+    (
+      bbox => {
+        let renderedElem = n.nodeRender(bbox);
+        <DeleteComponent renderedElem />;
+      }
+    );
+  | _ =>
+    if (debug) {
+      Js.log2("persisting or copying tag:", tag);
+    };
+    (
+      bbox => {
+        let renderedElem = n.nodeRender(bbox);
+        List.mapi(
+          (i, destNode: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) =>
+            <TransitionComponent
+              key={n.uid ++ string_of_int(i)}
+              bbox
+              renderedElem
+              /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
+              transform=Bobcat.Transform.ident
+              nextTransform={Bobcat.Transform.compose(
+                destNode.transform,
+                Bobcat.Transform.invert(n.transform),
+              )}
+            />,
+          destNodes,
+        )
+        |> Array.of_list
+        |> React.array;
+      }
+    );
+  };
+};
+
 let animate =
     (
       ~debug=false,
@@ -51,63 +92,34 @@ let animate =
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
     /* TODO: extFn */
-    | Some({pat: None}) =>
-      if (debug) {
-        Js.log2("vanish:", n.uid);
-      };
-      {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
-    | Some({pat: Some(tag)}) =>
-      /* look up tag in flow */
-      switch (List.assoc_opt(tag, flow.pattern)) {
-      | None =>
+    | Some(place) =>
+      switch (place) {
+      | {pat: None, extFns: []} =>
         if (debug) {
-          Js.log3("tag not in flow:", tag, flow.pattern |> Array.of_list);
+          Js.log2("vanish:", n.uid);
         };
-        {...n, nodes};
-      | Some(destTags) =>
-        /* look up dest tags in next */
-        let destNodes = List.map(findNodeByTagExn(next), destTags);
-        /* animate! */
-        let nodeRender =
-          switch (destNodes) {
-          | [] =>
-            if (debug) {
-              Js.log2("deleting tag:", tag);
-            };
-            (
-              bbox => {
-                let renderedElem = n.nodeRender(bbox);
-                <DeleteComponent renderedElem />;
-              }
-            );
-          | _ =>
-            if (debug) {
-              Js.log2("persisting or copying tag:", tag);
-            };
-            (
-              bbox => {
-                let renderedElem = n.nodeRender(bbox);
-                List.mapi(
-                  (i, destNode: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) =>
-                    <TransitionComponent
-                      key={n.uid ++ string_of_int(i)}
-                      bbox
-                      renderedElem
-                      /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
-                      transform=Bobcat.Transform.ident
-                      nextTransform={Bobcat.Transform.compose(
-                        destNode.transform,
-                        Bobcat.Transform.invert(n.transform),
-                      )}
-                    />,
-                  destNodes,
-                )
-                |> Array.of_list
-                |> React.array;
-              }
-            );
+        {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
+      | {pat, extFns} =>
+        /* TODO: should construct a nodeRender function for pat and for extFns. then combine them at the end */
+        let patRender =
+          switch (pat) {
+          | Some(tag) =>
+            /* look up tag in flow */
+            switch (List.assoc_opt(tag, flow.pattern)) {
+            | None =>
+              if (debug) {
+                Js.log3("tag not in flow:", tag, flow.pattern |> Array.of_list);
+              };
+              (_bbox => React.null);
+            | Some(destTags) =>
+              /* look up dest tags in next */
+              let destNodes = List.map(findNodeByTagExn(next), destTags);
+              /* animate! */
+              patRender(~debug, n, tag, destNodes);
+            }
+          | None => (_bbox => React.null)
           };
-        {...n, nodes, nodeRender};
+        {...n, nodeRender: patRender, nodes};
       }
     };
   };
