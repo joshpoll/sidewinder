@@ -22,28 +22,27 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
         | None => None
         | Some(ConfigGraphIR.{place, nodes} as n) =>
           let pat =
-            switch (place.pat) {
-            | Some(pat) => Some(pat) /* TODO: should we just fail here?? seems to violate our assumptions... */
-            | None =>
-              switch (p.pat) {
-              | Some(pat) =>
-                /* propagate pattern flow */
-                let pat = pat ++ "." ++ string_of_int(i);
-                switch (maybePDests) {
-                | Some(pDests) =>
-                  flowState :=
-                    {
-                      ...flowState^,
-                      pattern: [
-                        (pat, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
-                        ...flowState^.pattern,
-                      ],
-                    }
-                | None => ()
-                };
-                Some(pat);
-              | _ => None
-              }
+            switch (p.pat, place.pat) {
+            | (None, oPlacePat) => oPlacePat
+            | (Some(pPat), Some(placePat)) =>
+              Js.log("Encountered " ++ placePat ++ " when propagating " ++ pPat);
+              assert(false);
+            | (Some(pPat), None) =>
+              /* propagate pattern flow */
+              let pat = pPat ++ "." ++ string_of_int(i);
+              switch (maybePDests) {
+              | Some(pDests) =>
+                flowState :=
+                  {
+                    ...flowState^,
+                    pattern: [
+                      (pat, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
+                      ...flowState^.pattern,
+                    ],
+                  }
+              | None => ()
+              };
+              Some(pat);
             };
           let extFns = p.extFns @ place.extFns;
           let place = ConfigGraphIR.{pat, extFns};
