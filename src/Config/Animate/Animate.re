@@ -46,7 +46,7 @@ let patRender = (~debug=false, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), ta
     (
       bbox => {
         let renderedElem = n.nodeRender(bbox);
-        <DeleteComponent renderedElem />;
+        <DeleteComponent key={"pat__" ++ n.uid} renderedElem />;
       }
     );
   | _ =>
@@ -59,7 +59,7 @@ let patRender = (~debug=false, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), ta
         List.mapi(
           (i, destNode: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) =>
             <TransitionComponent
-              key={n.uid ++ string_of_int(i)}
+              key={"pat__" ++ n.uid ++ string_of_int(i)}
               bbox
               renderedElem
               /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
@@ -78,6 +78,37 @@ let patRender = (~debug=false, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), ta
   };
 };
 
+/* look up extFns in transform map and apply using Transition */
+let extFnsRender =
+    (
+      n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
+      extFns,
+      eftm: list((Place.t, list(Bobcat.Transform.t))),
+      bbox,
+    ) => {
+  let renderedElem = n.nodeRender(bbox);
+  let destTransforms =
+    List.map(ef => Belt.List.getAssoc(eftm, ef, (==))->Belt.Option.getExn, extFns)
+    |> List.flatten;
+  List.mapi(
+    (i, destTransform: Bobcat.Transform.t) =>
+      <TransitionComponent
+        key={"extFns__" ++ n.uid ++ string_of_int(i)}
+        bbox
+        renderedElem
+        /* seems like either nodeRender should have control over transform or else should remove transform arg from this */
+        transform=Bobcat.Transform.ident
+        nextTransform={Bobcat.Transform.compose(
+          destTransform,
+          Bobcat.Transform.invert(n.transform),
+        )}
+      />,
+    destTransforms,
+  )
+  |> Array.of_list
+  |> React.array;
+};
+
 let animate =
     (
       ~debug=false,
@@ -86,9 +117,38 @@ let animate =
       next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
     ) => {
   let rec animateAux =
-          (n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace))
+          (
+            extFnTransformMap: list((Place.t, list(Bobcat.Transform.t))),
+            n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
+          )
           : Bobcat.LayoutIR.node(ConfigIR.kernelPlace) => {
-    let nodes = List.map(animateAux, n.nodes);
+    let eftm = ref(extFnTransformMap);
+    switch (n.tag) {
+    | None => failwith("All nodes should be painted!")
+    | Some({extFns}) =>
+      List.map(
+        ef =>
+          switch (Belt.List.getAssoc(eftm^, ef, (==))) {
+          | Some(transforms) =>
+            let transforms = List.map(Bobcat.Transform.compose(n.transform), transforms);
+            eftm := Belt.List.setAssoc(eftm^, ef, transforms, (==));
+          | None =>
+            let extFnFlow = flow.extFn;
+            /* TODO: should really look up *all* roots, but only one root for now. The change should be to replace findNodeByTagExn with something that finds every root, and also to fix extFn propagation. */
+            let destNodes =
+              List.map(
+                findNodeByTagExn(next),
+                Belt.List.getAssoc(extFnFlow, ef, (==))->Belt.Option.getExn,
+              );
+            let destTransforms =
+              List.map((Bobcat.LayoutIR.{transform}) => transform, destNodes);
+            eftm := Belt.List.setAssoc(eftm^, ef, destTransforms, (==));
+          },
+        extFns,
+      )
+    };
+    let extFnTransformMap = eftm^;
+    let nodes = List.map(animateAux(extFnTransformMap), n.nodes);
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
     /* TODO: extFn */
@@ -119,12 +179,14 @@ let animate =
             }
           | None => (_bbox => React.null)
           };
-        {...n, nodeRender: patRender, nodes};
+        let extFnsRender = extFnsRender(n, extFns, extFnTransformMap);
+        let nodeRender = bbox => <g> {patRender(bbox)} {extFnsRender(bbox)} </g>;
+        {...n, nodeRender, nodes};
       }
     };
   };
   /* TODO: return a NoOp node that combines the animate node with the appearing nodes */
-  let animateN = animateAux(n);
+  let animateN = animateAux([], n);
   let appearingNodes = animateAppear(next);
   Bobcat.LayoutIR.{
     uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
