@@ -35,7 +35,7 @@ let convert = (flow: Flow.linearExt, n: Bobcat.KernelIR.node(ConfigIR.kernelPlac
                   };
                   Some(place);
                 };
-              Some(ConfigGraphIR.{pat, extFns: [] /* TODO */});
+              Some(ConfigGraphIR.{pat, extFns: parentTag.extFns});
             }
           | Some(tag) => Some(tag)
           };
