@@ -1,8 +1,8 @@
-open ConfigIR;
+open ConfigGraphIR;
 
-let rec lowerOption = (renderHole: unit => Bobcat.KernelIR.node(ConfigIR.kernelPlace), on) =>
+let rec lowerOption = (renderHole: unit => Bobcat.KernelIR.node(ConfigGraphIR.kernelPlace), on) =>
   switch (on) {
-  | None => {...renderHole(), tag: Some(None)}
+  | None => {...renderHole(), tag: Some([])}
   | Some({place, nodes, renderHole, render}) =>
     let renderedNode = render(List.map(lowerOption(renderHole), nodes));
     {...renderedNode, tag: Some(place)};

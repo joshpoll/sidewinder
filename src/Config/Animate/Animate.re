@@ -1,7 +1,7 @@
 let rec findNodeByTag =
         (Bobcat.LayoutIR.{tag, nodes} as n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), t) =>
   switch (tag) {
-  | Some(Some(p)) when t == p => Some(n)
+  | Some([p, ..._]) when t == p => Some(n)
   | _ =>
     List.fold_left(
       (on, n) =>
@@ -26,13 +26,13 @@ let rec animateAppear = (flow: Flow.linear, next: Bobcat.LayoutIR.node(ConfigIR.
   let nodes = List.map(animateAppear(flow), next.nodes);
   switch (next.tag) {
   | None => failwith("All nodes should be painted!")
-  | Some(None) => {
+  | Some([]) => {
       ...next,
       uid: next.uid ++ "__next",
       nodes,
       nodeRender: bbox => <AppearComponent renderedElem={next.nodeRender(bbox)} />,
     }
-  | Some(Some(_)) => {...next, uid: next.uid ++ "__next", nodes, nodeRender: _ => React.null}
+  | Some(_) => {...next, uid: next.uid ++ "__next", nodes, nodeRender: _ => React.null}
   };
 };
 
@@ -49,12 +49,12 @@ let animate =
     let nodes = List.map(animateAux, n.nodes);
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
-    | Some(None) =>
+    | Some([]) =>
       if (debug) {
         Js.log2("vanish:", n.uid);
       };
       {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
-    | Some(Some(tag)) =>
+    | Some([tag, ..._]) =>
       /* look up tag in flow */
       switch (List.assoc_opt(tag, flow)) {
       | None =>
@@ -114,7 +114,7 @@ let animate =
   let appearingNodes = animateAppear(flow, next);
   Bobcat.LayoutIR.{
     uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
-    tag: Some(None),
+    tag: Some([]),
     nodes: [animateN, appearingNodes],
     links: [],
     transform: Bobcat.Transform.ident,

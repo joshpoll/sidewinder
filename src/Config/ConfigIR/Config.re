@@ -18,7 +18,7 @@ let layout = ((flow, n)) => {
 /* TODO [perf]: maybe incrementalize this */
 /* input: list of flows and nodes that have been propagated (and potentially transformed)
    output: list of React elements */
-let compile = (~debug=false, flows, ns) => {
+let compile = (~debug=false, flows, ns: list(ConfigGraphIR.node)) => {
   let ns = List.map(ToKernel.lower, ns);
   let (flows, ns) = List.combine(flows, ns) |> List.map(layout) |> List.split;
   let (flows, ns) = (flows @ [[]], ns @ [List.rev(ns) |> List.hd]);

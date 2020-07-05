@@ -12,8 +12,8 @@ let convert = (flow: Flow.linear, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace))
           | None =>
             switch (parentTag) {
             | None => None
-            | Some(None) => Some(None)
-            | Some(Some(p)) =>
+            | Some([]) => Some([])
+            | Some([p, ..._]) =>
               let place = p ++ "p" ++ string_of_int(i);
               switch (List.assoc_opt(p, flowState^)) {
               | Some(pDests) =>
@@ -21,7 +21,7 @@ let convert = (flow: Flow.linear, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace))
                   [(place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^]
               | None => ()
               };
-              Some(Some(place));
+              Some([place]);
             }
           | Some(tag) => Some(tag)
           };

@@ -1,5 +1,3 @@
-open ConfigIR;
-
 /* propagates flace information
 
      e.g. a |-> [c], b |-> [] becomes
@@ -10,19 +8,19 @@ open ConfigIR;
 
 /* TODO: would be nicer with option monad? */
 
-let convert = (flow: Flow.linear, n) => {
+let convert = (flow: Flow.linear, n: ConfigGraphIR.node): (Flow.linear, ConfigGraphIR.node) => {
   let flowState = ref(flow);
-  let rec convertAux = (p, nodes): list(option(ConfigIR.node)) => {
+  let rec convertAux = (p, nodes): list(option(ConfigGraphIR.node)) => {
     let maybePDests = List.assoc_opt(p, flowState^);
     List.mapi(
       (i, on) =>
         switch (on) {
         | None => None
-        | Some({place, nodes} as n) =>
+        | Some(ConfigGraphIR.{place, nodes} as n) =>
           switch (place) {
           /* If the node already has a place, we're done propagating the previous place and start propagating this place */
-          | Some(place) => Some({...n, nodes: convertAux(place, nodes)})
-          | None =>
+          | [place, ..._] => Some({...n, nodes: convertAux(place, nodes)})
+          | [] =>
             let place = p ++ "." ++ string_of_int(i);
             switch (maybePDests) {
             | Some(pDests) =>
@@ -30,7 +28,7 @@ let convert = (flow: Flow.linear, n) => {
                 [(place, List.map(p => p ++ "." ++ string_of_int(i), pDests)), ...flowState^]
             | None => ()
             };
-            Some({...n, place: Some(place), nodes: convertAux(place, nodes)});
+            Some({...n, place: [place], nodes: convertAux(place, nodes)});
           }
         },
       nodes,
@@ -39,10 +37,10 @@ let convert = (flow: Flow.linear, n) => {
   let rec convertOption = on =>
     switch (on) {
     | None => None
-    | Some({place, nodes} as n) =>
+    | Some(ConfigGraphIR.{place, nodes} as n) =>
       switch (place) {
-      | None => Some({...n, nodes: List.map(convertOption, nodes)})
-      | Some(p) => Some({...n, nodes: convertAux(p, nodes)})
+      | [] => Some({...n, nodes: List.map(convertOption, nodes)})
+      | [p, ..._] => Some({...n, nodes: convertAux(p, nodes)})
       }
     };
   /* sequencing for flowState mutation */
