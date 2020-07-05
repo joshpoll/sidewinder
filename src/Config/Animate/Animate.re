@@ -1,7 +1,7 @@
 let rec findNodeByTag =
         (Bobcat.LayoutIR.{tag, nodes} as n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), t) =>
   switch (tag) {
-  | Some([p, ..._]) when t == p => Some(n)
+  | Some({pat: Some(p)}) when t == p => Some(n)
   | _ =>
     List.fold_left(
       (on, n) =>
@@ -26,7 +26,8 @@ let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
   let nodes = List.map(animateAppear, next.nodes);
   switch (next.tag) {
   | None => failwith("All nodes should be painted!")
-  | Some([]) => {
+  /* we are assuming next has already been painted by flow, so this case is when the node isn't part of the flow */
+  | Some({pat: None, extFns: []}) => {
       ...next,
       uid: next.uid ++ "__next",
       nodes,
@@ -49,14 +50,14 @@ let animate =
     let nodes = List.map(animateAux, n.nodes);
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
-    | Some([]) =>
+    /* TODO: extFn */
+    | Some({pat: None}) =>
       if (debug) {
         Js.log2("vanish:", n.uid);
       };
       {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
-    | Some([tag, ..._]) =>
+    | Some({pat: Some(tag)}) =>
       /* look up tag in flow */
-      /* TODO: extFn */
       switch (List.assoc_opt(tag, flow.pattern)) {
       | None =>
         if (debug) {
@@ -115,7 +116,7 @@ let animate =
   let appearingNodes = animateAppear(next);
   Bobcat.LayoutIR.{
     uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
-    tag: Some([]),
+    tag: Some(ConfigGraphIR.{pat: None, extFns: []}),
     nodes: [animateN, appearingNodes],
     links: [],
     transform: Bobcat.Transform.ident,

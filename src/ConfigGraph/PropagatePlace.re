@@ -18,10 +18,10 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
         switch (on) {
         | None => None
         | Some(ConfigGraphIR.{place, nodes} as n) =>
-          switch (place) {
+          switch (place.pat) {
           /* If the node already has a place, we're done propagating the previous place and start propagating this place */
-          | [place, ..._] => Some({...n, nodes: convertAux(place, nodes)})
-          | [] =>
+          | Some(place) => Some({...n, nodes: convertAux(place, nodes)})
+          | None =>
             let place = p ++ "." ++ string_of_int(i);
             switch (maybePDests) {
             | Some(pDests) =>
@@ -35,7 +35,14 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
                 }
             | None => ()
             };
-            Some({...n, place: [place], nodes: convertAux(place, nodes)});
+            Some({
+              ...n,
+              place: {
+                pat: Some(place),
+                extFns: [] /* TODO */,
+              },
+              nodes: convertAux(place, nodes),
+            });
           }
         },
       nodes,
@@ -45,9 +52,9 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
     switch (on) {
     | None => None
     | Some(ConfigGraphIR.{place, nodes} as n) =>
-      switch (place) {
-      | [] => Some({...n, nodes: List.map(convertOption, nodes)})
-      | [p, ..._] => Some({...n, nodes: convertAux(p, nodes)})
+      switch (place.pat) {
+      | None => Some({...n, nodes: List.map(convertOption, nodes)})
+      | Some(p) => Some({...n, nodes: convertAux(p, nodes)})
       }
     };
   /* sequencing for flowState mutation */

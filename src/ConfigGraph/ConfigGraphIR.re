@@ -1,6 +1,9 @@
 /* no tag = unpainted. list = painted */
 /* TODO: rename places */
-type kernelPlace = list(Place.t);
+type kernelPlace = {
+  pat: option(Place.t),
+  extFns: list(Place.t),
+};
 
 /* TODO: add links field. may also need to be an input to rendering */
 type node = {
@@ -12,7 +15,7 @@ type node = {
      labelled node when its input. Then place becomes read-only afterwards. Remains to be seen if that
      is a good strategy or not.
       */
-  place: list(Place.t),
+  place: kernelPlace,
   /* essentially an ADT constructor ID e.g. bind, ctxt. NOT unique. */
   name: string,
   nodes: list(option(node)), /* None is Leaf, Some is internal Node. Rewrites can change these positions. */
@@ -22,7 +25,7 @@ type node = {
   render: list(Bobcat.KernelIR.node(kernelPlace)) => Bobcat.KernelIR.node(kernelPlace),
 };
 
-let mk = (~place=[], ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+let mk = (~place={pat: None, extFns: []}, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
   place,
   name,
   nodes,
