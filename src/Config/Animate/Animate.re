@@ -22,8 +22,8 @@ let findNodeByTagExn = (n, t) =>
   | Some(n) => n
   };
 
-let rec animateAppear = (flow: Flow.linear, next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
-  let nodes = List.map(animateAppear(flow), next.nodes);
+let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
+  let nodes = List.map(animateAppear, next.nodes);
   switch (next.tag) {
   | None => failwith("All nodes should be painted!")
   | Some([]) => {
@@ -39,7 +39,7 @@ let rec animateAppear = (flow: Flow.linear, next: Bobcat.LayoutIR.node(ConfigIR.
 let animate =
     (
       ~debug=false,
-      flow: Flow.linear,
+      flow: Flow.linearExt,
       n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
       next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
     ) => {
@@ -56,10 +56,11 @@ let animate =
       {...n, nodes, nodeRender: bbox => <VanishComponent renderedElem={n.nodeRender(bbox)} />};
     | Some([tag, ..._]) =>
       /* look up tag in flow */
-      switch (List.assoc_opt(tag, flow)) {
+      /* TODO: extFn */
+      switch (List.assoc_opt(tag, flow.pattern)) {
       | None =>
         if (debug) {
-          Js.log3("tag not in flow:", tag, flow |> Array.of_list);
+          Js.log3("tag not in flow:", tag, flow.pattern |> Array.of_list);
         };
         {...n, nodes};
       | Some(destTags) =>
@@ -111,7 +112,7 @@ let animate =
   };
   /* TODO: return a NoOp node that combines the animate node with the appearing nodes */
   let animateN = animateAux(n);
-  let appearingNodes = animateAppear(flow, next);
+  let appearingNodes = animateAppear(next);
   Bobcat.LayoutIR.{
     uid: "animation wrapper" ++ n.uid ++ "->" ++ next.uid,
     tag: Some([]),

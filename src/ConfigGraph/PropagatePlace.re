@@ -8,10 +8,11 @@
 
 /* TODO: would be nicer with option monad? */
 
-let convert = (flow: Flow.linear, n: ConfigGraphIR.node): (Flow.linear, ConfigGraphIR.node) => {
+let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, ConfigGraphIR.node) => {
   let flowState = ref(flow);
   let rec convertAux = (p, nodes): list(option(ConfigGraphIR.node)) => {
-    let maybePDests = List.assoc_opt(p, flowState^);
+    /* TODO: extFn */
+    let maybePDests = List.assoc_opt(p, flowState^.pattern);
     List.mapi(
       (i, on) =>
         switch (on) {
@@ -25,7 +26,13 @@ let convert = (flow: Flow.linear, n: ConfigGraphIR.node): (Flow.linear, ConfigGr
             switch (maybePDests) {
             | Some(pDests) =>
               flowState :=
-                [(place, List.map(p => p ++ "." ++ string_of_int(i), pDests)), ...flowState^]
+                {
+                  ...flowState^,
+                  pattern: [
+                    (place, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
+                    ...flowState^.pattern,
+                  ],
+                }
             | None => ()
             };
             Some({...n, place: [place], nodes: convertAux(place, nodes)});

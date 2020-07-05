@@ -11,3 +11,5 @@ type linearExt = {
 
 /* currently unsupported */
 type general = list((list(Place.t), list(Place.t)));
+
+let none = {pattern: [], extFn: []};

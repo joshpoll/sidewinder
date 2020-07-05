@@ -1,5 +1,5 @@
 /* fills in flow in kernel nodes that were untagged. similar to propagate but at the Kernel IR level */
-let convert = (flow: Flow.linear, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace)) => {
+let convert = (flow: Flow.linearExt, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace)) => {
   let flowState = ref(flow);
   let rec convertAux =
           (parentTag, nodes: list(Bobcat.KernelIR.node(ConfigIR.kernelPlace)))
@@ -15,10 +15,16 @@ let convert = (flow: Flow.linear, n: Bobcat.KernelIR.node(ConfigIR.kernelPlace))
             | Some([]) => Some([])
             | Some([p, ..._]) =>
               let place = p ++ "p" ++ string_of_int(i);
-              switch (List.assoc_opt(p, flowState^)) {
+              switch (List.assoc_opt(p, flowState^.pattern)) {
               | Some(pDests) =>
                 flowState :=
-                  [(place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)), ...flowState^]
+                  {
+                    ...flowState^,
+                    pattern: [
+                      (place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)),
+                      ...flowState^.pattern,
+                    ],
+                  }
               | None => ()
               };
               Some([place]);
