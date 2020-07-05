@@ -21,3 +21,12 @@ type node = {
   renderHole: unit => Bobcat.KernelIR.node(kernelPlace),
   render: list(Bobcat.KernelIR.node(kernelPlace)) => Bobcat.KernelIR.node(kernelPlace),
 };
+
+let mk = (~place=[], ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+  place,
+  name,
+  nodes,
+  links: (),
+  renderHole: Belt.Option.getWithDefault(renderHole, () => Bobcat.Theia.hole()),
+  render,
+};
