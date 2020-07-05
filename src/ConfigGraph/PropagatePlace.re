@@ -10,54 +10,49 @@
 
 let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, ConfigGraphIR.node) => {
   let flowState = ref(flow);
-  let rec convertAux = (p, nodes): list(option(ConfigGraphIR.node)) => {
-    /* TODO: extFn */
-    let maybePDests = List.assoc_opt(p, flowState^.pattern);
+  let rec convertAux = (p: ConfigGraphIR.kernelPlace, nodes): list(option(ConfigGraphIR.node)) => {
+    let maybePDests =
+      switch (p.pat) {
+      | Some(pat) => List.assoc_opt(pat, flowState^.pattern)
+      | None => None
+      };
     List.mapi(
       (i, on) =>
         switch (on) {
         | None => None
         | Some(ConfigGraphIR.{place, nodes} as n) =>
-          switch (place.pat) {
-          /* If the node already has a place, we're done propagating the previous place and start propagating this place */
-          | Some(place) => Some({...n, nodes: convertAux(place, nodes)})
-          | None =>
-            let place = p ++ "." ++ string_of_int(i);
-            switch (maybePDests) {
-            | Some(pDests) =>
-              flowState :=
-                {
-                  ...flowState^,
-                  pattern: [
-                    (place, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
-                    ...flowState^.pattern,
-                  ],
-                }
-            | None => ()
+          let pat =
+            switch (place.pat) {
+            | Some(pat) => Some(pat) /* TODO: should we just fail here?? seems to violate our assumptions... */
+            | None =>
+              switch (p.pat) {
+              | Some(pat) =>
+                /* propagate pattern flow */
+                let pat = pat ++ "." ++ string_of_int(i);
+                switch (maybePDests) {
+                | Some(pDests) =>
+                  flowState :=
+                    {
+                      ...flowState^,
+                      pattern: [
+                        (pat, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
+                        ...flowState^.pattern,
+                      ],
+                    }
+                | None => ()
+                };
+                Some(pat);
+              | _ => None
+              }
             };
-            Some({
-              ...n,
-              place: {
-                pat: Some(place),
-                extFns: [] /* TODO */,
-              },
-              nodes: convertAux(place, nodes),
-            });
-          }
+          let extFns = p.extFns @ place.extFns;
+          let place = ConfigGraphIR.{pat, extFns};
+          Some({...n, place, nodes: convertAux(place, nodes)});
         },
       nodes,
     );
   };
-  let rec convertOption = on =>
-    switch (on) {
-    | None => None
-    | Some(ConfigGraphIR.{place, nodes} as n) =>
-      switch (place.pat) {
-      | None => Some({...n, nodes: List.map(convertOption, nodes)})
-      | Some(p) => Some({...n, nodes: convertAux(p, nodes)})
-      }
-    };
   /* sequencing for flowState mutation */
-  let n = convertOption(Some(n))->Belt.Option.getExn;
+  let n = {...n, nodes: convertAux(n.place, n.nodes)};
   (flowState^, n);
 };
