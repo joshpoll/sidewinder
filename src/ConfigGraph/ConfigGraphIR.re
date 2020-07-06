@@ -5,6 +5,10 @@ type kernelPlace = {
   extFns: list(Place.t),
 };
 
+let noPlace = {pat: None, extFns: []};
+
+// type kernelPlace = list(Place.t);
+
 /* TODO: add links field. may also need to be an input to rendering */
 type node = {
   /* place is essentially a variable tag. in input config, only occurs at "leaves" i.e. no subnode of a node with a
@@ -25,7 +29,7 @@ type node = {
   render: list(Bobcat.KernelIR.node(kernelPlace)) => Bobcat.KernelIR.node(kernelPlace),
 };
 
-let mk = (~place={pat: None, extFns: []}, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+let mk = (~place=noPlace, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
   place,
   name,
   nodes,

@@ -3,10 +3,9 @@ let rec lowerOption = (on: option(ConfigIR.node)): option(ConfigGraphIR.node) =>
   | None => None
   | Some({place, name, nodes, renderHole, render}) =>
     let nodes = List.map(lowerOption, nodes);
-    let pat = place;
     Some({
       place: {
-        pat,
+        pat: place,
         extFns: [],
       },
       name,

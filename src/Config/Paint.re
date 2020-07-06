@@ -10,34 +10,26 @@ let convert = (flow: Flow.linearExt, n: Bobcat.KernelIR.node(ConfigIR.kernelPlac
     List.mapi(
       (i, Bobcat.KernelIR.{tag, nodes} as n: Bobcat.KernelIR.node(ConfigIR.kernelPlace)) => {
         let tag =
-          switch (tag) {
+          switch (parentTag, tag) {
+          | (_, Some(tag)) => Some(tag)
           /* unpainted: inherit from parent, add to flowState if necessary */
-          | None =>
-            switch (parentTag) {
-            | None => None
-            | Some(parentTag) =>
-              let pat =
-                switch (parentTag.pat) {
-                | None => None
-                | Some(p) =>
-                  let place = p ++ "p" ++ string_of_int(i);
-                  switch (List.assoc_opt(p, flowState^.pattern)) {
-                  | Some(pDests) =>
-                    flowState :=
-                      {
-                        ...flowState^,
-                        pattern: [
-                          (place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)),
-                          ...flowState^.pattern,
-                        ],
-                      }
-                  | None => ()
-                  };
-                  Some(place);
-                };
-              Some(ConfigGraphIR.{pat, extFns: parentTag.extFns});
-            }
-          | Some(tag) => Some(tag)
+          | (None, None)
+          | (Some({pat: None, extFns: _}), None) => parentTag
+          | (Some({pat: Some(pat), extFns: rest}), None) =>
+            let place = pat ++ "p" ++ string_of_int(i);
+            switch (List.assoc_opt(pat, flowState^.pattern)) {
+            | Some(pDests) =>
+              flowState :=
+                {
+                  ...flowState^,
+                  pattern: [
+                    (place, List.map(p => p ++ "p" ++ string_of_int(i), pDests)),
+                    ...flowState^.pattern,
+                  ],
+                }
+            | None => ()
+            };
+            Some(ConfigGraphIR.{pat: Some(place), extFns: rest});
           };
 
         let nodes = convertAux(tag, nodes);
