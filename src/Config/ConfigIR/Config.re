@@ -50,3 +50,9 @@ let filterPlaces = (places: list(Place.t), n: ConfigIR.node) => {
     };
   filterPlacesOption(Some(n))->Belt.Option.getExn;
 };
+
+let liftToCompiledTransition = n => {
+  let (_, n) =
+    n |> filterPlaces([]) |> ToConfigGraph.lower |> PropagatePlace.convert(Sidewinder.Flow.none);
+  compileTransition(n, Flow.none, n);
+};
