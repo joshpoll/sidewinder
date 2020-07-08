@@ -36,3 +36,17 @@ let compileTransition = (~debug=false, n1, flow, n2) => {
   let animatedNode = Animate.animate(~debug, flow, n1, n2);
   Bobcat.Kernel.renderLayout(animatedNode);
 };
+
+let filterPlaces = (places: list(Place.t), n: ConfigIR.node) => {
+  let rec filterPlacesOption = (on: option(ConfigIR.node)) =>
+    switch (on) {
+    | None => None
+    | Some(n) =>
+      let nodes = List.map(filterPlacesOption, n.nodes);
+      switch (n.place) {
+      | Some(p) when !List.mem(p, places) => Some({...n, nodes, place: None})
+      | _ => Some({...n, nodes})
+      };
+    };
+  filterPlacesOption(Some(n))->Belt.Option.getExn;
+};

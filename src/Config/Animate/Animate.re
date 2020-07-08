@@ -1,3 +1,6 @@
+/* map from place to parent offset and dest transforms */
+type extFnTransformMap = list((Place.t, (Bobcat.Transform.t, list(Bobcat.Transform.t))));
+
 let rec findNodeByTag =
         (Bobcat.LayoutIR.{tag, nodes} as n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), t) =>
   switch (tag) {
@@ -82,18 +85,16 @@ let patRender = (~debug=false, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), ta
 
 /* look up extFns in transform map and apply using Transition */
 let extFnsRender =
-    (
-      n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
-      extFns,
-      eftm: list((Place.t, list(Bobcat.Transform.t))),
-      bbox,
-    ) => {
+    (n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace), extFns, eftm: extFnTransformMap, bbox) => {
   let renderedElem = n.nodeRender(bbox);
   let destTransforms =
     List.map(ef => Belt.List.getAssoc(eftm, ef, (==))->Belt.Option.getExn, extFns)
+    |> List.map(((_, transforms)) => transforms)
     |> List.flatten;
   List.mapi(
-    (i, destTransform: Bobcat.Transform.t) =>
+    (i, destTransform: Bobcat.Transform.t) => {
+      Js.log2("destTransform", destTransform);
+      Js.log2("n.transform", n.transform);
       <TransitionComponent
         key={"extFns__" ++ n.uid ++ string_of_int(i)}
         bbox
@@ -104,7 +105,8 @@ let extFnsRender =
           destTransform,
           Bobcat.Transform.invert(n.transform),
         )}
-      />,
+      />;
+    },
     destTransforms,
   )
   |> Array.of_list
@@ -119,10 +121,7 @@ let animate =
       next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
     ) => {
   let rec animateAux =
-          (
-            extFnTransformMap: list((Place.t, list(Bobcat.Transform.t))),
-            n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace),
-          )
+          (extFnTransformMap: extFnTransformMap, n: Bobcat.LayoutIR.node(ConfigIR.kernelPlace))
           : Bobcat.LayoutIR.node(ConfigIR.kernelPlace) => {
     let eftm = ref(extFnTransformMap);
     switch (n.tag) {
@@ -131,9 +130,22 @@ let animate =
       List.map(
         ef =>
           switch (Belt.List.getAssoc(eftm^, ef, (==))) {
-          | Some(transforms) =>
-            let transforms = List.map(Bobcat.Transform.compose(n.transform), transforms);
-            eftm := Belt.List.setAssoc(eftm^, ef, transforms, (==));
+          | Some((parentTransform, transforms)) =>
+            Js.log2("n.tag", n.tag);
+            Js.log2("n.transform", n.transform);
+            Js.log2("ef", ef);
+            Js.log2("transforms before", transforms |> Array.of_list);
+            /* src_transform - src-child_transform = dst_transform - dst-child_transform */
+            /* dst-child_transform = dst_transform - (dst_transform - dst-child_transform) = dst_transform - (src_transform - src-child_transform) */
+            let deltaTransform =
+              Bobcat.Transform.compose(parentTransform, Bobcat.Transform.invert(n.transform));
+            let transforms =
+              List.map(
+                Bobcat.Transform.compose(Bobcat.Transform.invert(deltaTransform)),
+                transforms,
+              );
+            Js.log2("transforms after", transforms |> Array.of_list);
+            eftm := Belt.List.setAssoc(eftm^, ef, (n.transform, transforms), (==));
           | None =>
             let extFnFlow = flow.extFn;
             /* TODO: should really look up *all* roots, but only one root for now. The change should be to replace findNodeByTagExn with something that finds every root, and also to fix extFn propagation. */
@@ -144,7 +156,7 @@ let animate =
               );
             let destTransforms =
               List.map((Bobcat.LayoutIR.{transform}) => transform, destNodes);
-            eftm := Belt.List.setAssoc(eftm^, ef, destTransforms, (==));
+            eftm := Belt.List.setAssoc(eftm^, ef, (n.transform, destTransforms), (==));
           },
         extFns,
       )
@@ -154,6 +166,7 @@ let animate =
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
     | Some(place) =>
+      Js.log2("place", place);
       switch (place) {
       | {pat: None, extFns: []} =>
         if (debug) {
@@ -182,7 +195,7 @@ let animate =
         let extFnsRender = extFnsRender(n, extFns, extFnTransformMap);
         let nodeRender = bbox => <g> {patRender(bbox)} {extFnsRender(bbox)} </g>;
         {...n, nodeRender, nodes};
-      }
+      };
     };
     /* ---------- */
     /* ---------- */
