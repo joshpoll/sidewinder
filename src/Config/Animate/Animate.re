@@ -93,9 +93,9 @@ let extFnsRender =
     |> List.flatten;
   List.mapi(
     (i, destTransform: Bobcat.Transform.t) => {
-      Js.log2("destTransform", destTransform);
-      Js.log2("n.transform", n.transform);
       <TransitionComponent
+        // Js.log2("destTransform", destTransform);
+        // Js.log2("n.transform", n.transform);
         key={"extFns__" ++ n.uid ++ string_of_int(i)}
         bbox
         renderedElem
@@ -105,7 +105,7 @@ let extFnsRender =
           destTransform,
           Bobcat.Transform.invert(n.transform),
         )}
-      />;
+      />
     },
     destTransforms,
   )
@@ -131,10 +131,10 @@ let animate =
         ef =>
           switch (Belt.List.getAssoc(eftm^, ef, (==))) {
           | Some((parentTransform, transforms)) =>
-            Js.log2("n.tag", n.tag);
-            Js.log2("n.transform", n.transform);
-            Js.log2("ef", ef);
-            Js.log2("transforms before", transforms |> Array.of_list);
+            // Js.log2("n.tag", n.tag);
+            // Js.log2("n.transform", n.transform);
+            // Js.log2("ef", ef);
+
             /* src_transform - src-child_transform = dst_transform - dst-child_transform */
             /* dst-child_transform = dst_transform - (dst_transform - dst-child_transform) = dst_transform - (src_transform - src-child_transform) */
             let deltaTransform =
@@ -144,8 +144,9 @@ let animate =
                 Bobcat.Transform.compose(Bobcat.Transform.invert(deltaTransform)),
                 transforms,
               );
-            Js.log2("transforms after", transforms |> Array.of_list);
+            // Js.log2("transforms after", transforms |> Array.of_list);
             eftm := Belt.List.setAssoc(eftm^, ef, (n.transform, transforms), (==));
+          // Js.log2("transforms before", transforms |> Array.of_list);
           | None =>
             let extFnFlow = flow.extFn;
             /* TODO: should really look up *all* roots, but only one root for now. The change should be to replace findNodeByTagExn with something that finds every root, and also to fix extFn propagation. */
@@ -166,7 +167,7 @@ let animate =
     switch (n.tag) {
     | None => failwith("All nodes should be painted!")
     | Some(place) =>
-      Js.log2("place", place);
+      // Js.log2("place", place);
       switch (place) {
       | {pat: None, extFns: []} =>
         if (debug) {
@@ -195,7 +196,7 @@ let animate =
         let extFnsRender = extFnsRender(n, extFns, extFnTransformMap);
         let nodeRender = bbox => <g> {patRender(bbox)} {extFnsRender(bbox)} </g>;
         {...n, nodeRender, nodes};
-      };
+      }
     };
     /* ---------- */
     /* ---------- */
