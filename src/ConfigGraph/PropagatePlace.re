@@ -31,12 +31,6 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
   let flowState = ref(flow);
   let rec convertAux =
           (ConfigGraphIR.{pat: p, extFns}, nodes: list(option(ConfigGraphIR.node))) => {
-    /* for all places in p */
-    /*   look up in the pattern flow */
-    /*     if there, propagate that pattern downwards */
-    /*   look up in the extFn flow */
-    /*     if there, ??? */
-    /* combine pattern with each node's existing patterns and recurse? do I need to update that node's patterns somehow? */
     let maybePDests =
       switch (p) {
       | Some(pat) => List.assoc_opt(pat, flowState^.pattern)
@@ -90,81 +84,6 @@ let convert = (flow: Flow.linearExt, n: ConfigGraphIR.node): (Flow.linearExt, Co
               extFns;
             };
 
-          // switch (p, isPat, isExtFn) {
-          // | (Some(p), false, false) =>
-          //   /* propagate pattern flow */
-          //   let pat = p ++ "." ++ string_of_int(i);
-          //   switch (maybePDests) {
-          //   | Some(pDests) =>
-          //     flowState :=
-          //       {
-          //         ...flowState^,
-          //         pattern: [
-          //           (pat, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
-          //           ...flowState^.pattern,
-          //         ],
-          //       }
-          //   | None => ()
-          //   };
-          //   Some(pat);
-          // /* we have a pattern here. decide what to do with it */
-          // | (_, Some(place)) =>
-          //   /* pattern propagation */
-          //   if (List.mem_assoc(place, flowState^.pattern)) {
-          //     let pat =
-          //       switch (p) {
-          //       | None => Some(place)
-          //       | Some(pPat) =>
-          //         Js.log("Encountered " ++ place ++ " when propagating " ++ pPat);
-          //         assert(false);
-          //       };
-          //     ();
-          //   } else {
-          //     /* this should be normal propagation. */
-          //     failwith("TODO");
-          //   };
-
-          //   /* extFn propagation */
-          //   if (List.mem_assoc(place, flowState^.extFn)) {
-          //     failwith("TODO");
-          //   };
-          // };
-          // let pat =
-          //   switch (p, place) {
-          //   | (_, [_, _, ..._]) =>
-          //     Js.log2("existing place with more than one entry: ", place |> Array.of_list);
-          //     assert(false);
-          //   /* TODO: behavior here depends on whether the entry is an extFn or not */
-          //   | (None, oPlacePat) => option_of_list(oPlacePat)
-          //   | (Some(pPat), [placePat]) when List.mem_assoc(placePat, flowState^.pattern) =>
-          //     Js.log("Encountered " ++ placePat ++ " when propagating " ++ pPat);
-          //     assert(false);
-          //   /* extFn case */
-          //   | (Some(pPat), [extFn]) when List.mem_assoc(extFn, flowState^.extFn) =>
-          //     /* TODO: add extFn to extFn list */
-          //     assert(false)
-          //   | (Some(pPat), [place]) =>
-          //     Js.log("Unused place " ++ place);
-          //     assert(false);
-          //   | (Some(pPat), []) =>
-          //     /* propagate pattern flow */
-          //     let pat = pPat ++ "." ++ string_of_int(i);
-          //     switch (maybePDests) {
-          //     | Some(pDests) =>
-          //       flowState :=
-          //         {
-          //           ...flowState^,
-          //           pattern: [
-          //             (pat, List.map(p => p ++ "." ++ string_of_int(i), pDests)),
-          //             ...flowState^.pattern,
-          //           ],
-          //         }
-          //     | None => ()
-          //     };
-          //     Some(pat);
-          //   };
-          // let extFns = p.extFns @ place.extFns;
-          // let place = ConfigGraphIR.{pat, extFns};
           let place = ConfigGraphIR.{pat, extFns};
           Some({...n, place, nodes: convertAux(place, nodes)});
         },

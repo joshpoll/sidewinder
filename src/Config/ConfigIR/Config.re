@@ -1,16 +1,6 @@
 /* TODO: would be nicer with option monad? */
 
-/* let rec lowerOption = (renderHole, on) =>
-   switch (on) {
-   | None => renderHole
-   | Some({place, nodes, render}) =>
-     let renderedNode = render(List.map(lowerOption, nodes));
-     {...renderedNode, tag: Some(place)};
-   }; */
-
 let layout = ((flow, n)) => {
-  // let (flow, n) = propagatePlace(flow, n);
-  // let n = ToKernel.lower(n);
   let (flow, n) = Paint.convert(flow, n);
   (flow, Bobcat.Kernel.layout(n));
 };
