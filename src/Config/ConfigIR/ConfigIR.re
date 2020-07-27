@@ -2,6 +2,7 @@ type kernelPlace = ConfigGraphIR.kernelPlace;
 
 /* TODO: add links field. may also need to be an input to rendering */
 type node = {
+  uid: Bobcat.UID.t,
   /* place is essentially a variable tag. in input config, only occurs at "leaves" i.e. no subnode of a node with a
      place can contain another place. however, after customization, this is not guaranteed. while
      useful for the frontend, not sure if that guarantee helps us internally...
@@ -19,7 +20,12 @@ type node = {
   render: list(Bobcat.KernelIR.node(kernelPlace)) => Bobcat.KernelIR.node(kernelPlace),
 };
 
-let mk = (~place=?, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+let mk = (~uid=?, ~place=?, ~renderHole=?, ~name, ~nodes, ~render, ()) => {
+  uid:
+    switch (uid) {
+    | None => "autogen__" ++ string_of_int(Bobcat.UID.mk())
+    | Some(uid) => uid
+    },
   place,
   name,
   nodes,
