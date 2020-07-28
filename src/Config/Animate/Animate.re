@@ -36,7 +36,15 @@ let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
           lca: lca ++ "__next",
           source: List.map(uid => uid ++ "__next", source),
           target: List.map(uid => uid ++ "__next", target),
-          linkRender,
+          linkRender:
+            switch (linkRender) {
+            | None => None
+            | Some(render) =>
+              Some(
+                (~source, ~target) =>
+                  <AppearComponent renderedElem={render(~source, ~target)} />,
+              )
+            },
         }
       },
       next.links,
