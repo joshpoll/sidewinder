@@ -29,6 +29,18 @@ let findNodeByTagExn = (n, t) =>
 
 let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
   let nodes = List.map(animateAppear, next.nodes);
+  let links =
+    List.map(
+      ({lca, source, target, linkRender}: Bobcat.Link.lcaPath) => {
+        Bobcat.Link.{
+          lca: lca ++ "__next",
+          source: List.map(uid => uid ++ "__next", source),
+          target: List.map(uid => uid ++ "__next", target),
+          linkRender,
+        }
+      },
+      next.links,
+    );
   switch (next.tag) {
   | None => failwith("All nodes should be painted!")
   /* we are assuming next has already been painted by flow, so this case is when the node isn't part of the flow */
@@ -36,9 +48,10 @@ let rec animateAppear = (next: Bobcat.LayoutIR.node(ConfigIR.kernelPlace)) => {
       ...next,
       uid: next.uid ++ "__next",
       nodes,
+      links,
       nodeRender: bbox => <AppearComponent renderedElem={next.nodeRender(bbox)} />,
     }
-  | Some(_) => {...next, uid: next.uid ++ "__next", nodes, nodeRender: _ => React.null}
+  | Some(_) => {...next, uid: next.uid ++ "__next", nodes, links, nodeRender: _ => React.null}
   };
 };
 
